@@ -166,7 +166,10 @@ class Vue():
         self.labid.pack()
         self.cadreinfochoix=Frame(self.cadreinfo,height=200,width=200,bg="grey30")
         self.cadreinfochoix.pack()
-        self.btncreervaisseau=Button(self.cadreinfo,text="Vaisseau",command=self.creervaisseau)
+        self.btncreervaisseau=Button(self.cadreinfo,text="Vaisseau")
+        self.btncreervaisseau.bind("<Button>",self.creervaisseau)
+        self.btncreercargo=Button(self.cadreinfo,text="Cargo")
+        self.btncreercargo.bind("<Button>",self.creervaisseau)
         self.lbselectecible=Label(self.cadreinfo,text="Choisir cible",bg="darkgrey")
 
 
@@ -428,12 +431,14 @@ class Vue():
         self.canevas.yview_moveto(pcty)
 
 
-    def creervaisseau(self):
-        print("Creer vaisseau")
-        self.parent.creer_vaisseau()
+    def creervaisseau(self,evt):
+        type_vaisseau=evt.widget.cget("text")
+        print("Creer vaisseau",type_vaisseau)
+        self.parent.creer_vaisseau(type_vaisseau)
         self.maselection=None
         self.canevas.delete("marqueur")
         self.btncreervaisseau.pack_forget()
+        self.btncreercargo.pack_forget()
 
     def afficher_jeu(self):
         mod = self.modele
@@ -454,31 +459,45 @@ class Vue():
                                                  dash=(2, 2), outline=mod.joueurs[self.nom].couleur,
                                                  tags=("select", "marqueur"))
             elif self.maselection[1] == "flotte":
-                for i in joueur.flotte:
-                    if i.id == self.maselection[2]:
-                        x = i.x
-                        y = i.y
-                        t = 10 * self.zoom
-                        self.canevas.create_rectangle((x) - t,
-                                                      (y) - t,
-                                                      (x) + t,
-                                                      (y) + t,
-                                                      dash=(2, 2), outline=mod.joueurs[self.nom].couleur,
-                                                      tags=("select", "marqueur"))
+                for j in joueur.flotte:
+                    for i in joueur.flotte[j]:
+                        i=joueur.flotte[j][i]
+                        if i.id == self.maselection[2]:
+                            x = i.x
+                            y = i.y
+                            t = 10 * self.zoom
+                            self.canevas.create_rectangle((x) - t,
+                                                          (y) - t,
+                                                          (x) + t,
+                                                          (y) + t,
+                                                          dash=(2, 2), outline=mod.joueurs[self.nom].couleur,
+                                                          tags=("select", "marqueur"))
 
-        tailleF = 5 * self.zoom
+
         for i in mod.joueurs.keys():
             i = mod.joueurs[i]
-            for j in i.flotte:
-                self.canevas.create_rectangle((j.x - tailleF),
-                                              (j.y - tailleF),
-                                              (j.x + tailleF),
-                                              (j.y + tailleF),
-                                              fill=i.couleur,
-                                              tags=(j.proprietaire, "flotte", str(j.id), "artefact"))
+            for k in i.flotte:
+                for j in i.flotte[k]:
+                    j=i.flotte[k][j]
+                    tailleF = j.taille * self.zoom
+                    if k=="Vaisseau":
+                        self.canevas.create_rectangle((j.x - tailleF),
+                                                      (j.y - tailleF),
+                                                      (j.x + tailleF),
+                                                      (j.y + tailleF),
+                                                      fill=i.couleur,
+                                                      tags=(j.proprietaire, "flotte", str(j.id), "artefact"))
+                    else:
+                        self.canevas.create_oval((j.x - tailleF),
+                                                      (j.y - tailleF),
+                                                      (j.x + tailleF),
+                                                      (j.y + tailleF),
+                                                      fill=i.couleur,
+                                                      tags=(j.proprietaire, "flotte", str(j.id), "artefact"))
 
         for i in mod.ias:
-            for j in i.flotte:
+            for j in i.flotte["Vaisseau"]:
+                j=i.flotte["Vaisseau"][j]
 
                 x1, y1 = hlp.getAngledPoint(j.ang, j.taille / 2, j.x, j.y)
 
@@ -547,6 +566,7 @@ class Vue():
 
     def cliquecosmos(self,evt):
         self.btncreervaisseau.pack_forget()
+        self.btncreercargo.pack_forget()
         t=self.canevas.gettags(CURRENT)
         if t and t[0]==self.nom:
             #self.maselection=self.canevas.find_withtag(CURRENT)#[0]
@@ -572,6 +592,8 @@ class Vue():
             
     def montreetoileselection(self):
         self.btncreervaisseau.pack()
+        self.btncreercargo.pack()
+
     def montreflotteselection(self):
         self.lbselectecible.pack()
     

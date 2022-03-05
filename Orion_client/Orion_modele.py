@@ -23,7 +23,7 @@ class Vaisseau():
         self.y=y
         self.cargo=0
         self.energie=100
-        self.taille=20
+        self.taille=4
         self.vitesse=random.randrange(20)+2
         self.cible=0
         self.ang=0
@@ -51,7 +51,15 @@ class Vaisseau():
                 print("RESSOURCES...",self.cible.id,self.cible.ressource,self.cible.proprietaire)
                 self.cible.proprietaire=self.proprietaire
                 self.cible=0
-
+class Cargo(Vaisseau):
+    def __init__(self,parent,nom,x,y):
+        Vaisseau.__init__(self,parent,nom,x,y)
+        self.cargo=1000
+        self.energie=500
+        self.taille=6
+        self.vitesse=3
+        self.cible=0
+        self.ang=0
               
 class Joueur():
     def __init__(self,parent,nom,etoilemere,couleur):
@@ -62,30 +70,41 @@ class Joueur():
         self.etoilemere.proprietaire=self.nom
         self.couleur=couleur
         self.etoilescontrolees=[etoilemere]
-        self.flotte=[]
+        self.flotte={"Vaisseau":{},
+                     "Cargo":{}}
         self.actions={"creervaisseau":self.creervaisseau,
                       "ciblerflotte":self.ciblerflotte}
         
     def creervaisseau(self,params):
-        v=Vaisseau(self,self.nom,self.etoilemere.x+10,self.etoilemere.y)
-        self.flotte.append(v)
+        type_vaisseau=params[0]
+        if type_vaisseau=="Cargo":
+            v=Cargo(self,self.nom,self.etoilemere.x+10,self.etoilemere.y)
+        else:
+            v=Vaisseau(self,self.nom,self.etoilemere.x+10,self.etoilemere.y)
+        self.flotte[type_vaisseau][v.id]=v
         return v
         
     def ciblerflotte(self,ids):
         idori,iddesti=ids
-        for i in self.flotte:
-            if i.id==idori:
-                for j in self.parent.etoiles:
-                    if j.id== iddesti:
-                        i.acquerir_cible(j)
-                        #i.cible=j
-                        print("GOT TARGET")
-                        return
+        ori=None
+        for i in self.flotte.keys():
+            if idori in self.flotte[i]:
+                ori=self.flotte[i][idori]
+
+        if ori:
+            for j in self.parent.etoiles:
+                if j.id== iddesti:
+                    ori.acquerir_cible(j)
+                    #i.cible=j
+                    print("GOT TARGET")
+                    return
         
         
     def prochaineaction(self):
         for i in self.flotte:
-            i.jouer_prochain_coup()
+            for j in self.flotte[i]:
+                j=self.flotte[i][j]
+                j.jouer_prochain_coup()
             
     
 
@@ -99,10 +118,12 @@ class IA(Joueur):
         
     def prochaineaction(self):
         for i in self.flotte:
-            i.jouer_prochain_coup(1)
+            for j in self.flotte[i]:
+                j=self.flotte[i][j]
+                j.jouer_prochain_coup(1)
                 
         if self.cooldown==0:
-            v=self.creervaisseau(0)
+            v=self.creervaisseau(["Vaisseau"])
             cible = random.choice(self.parent.etoiles)
             v.acquerir_cible(cible)
             self.cooldown=random.randrange(self.cooldownmax) + (self.cooldownmax/2)

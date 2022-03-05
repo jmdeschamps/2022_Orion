@@ -226,8 +226,8 @@ class Controleur():
         vals = self.modele.trouver_valeurs()
         return vals
 
-    def creer_vaisseau(self):
-        self.actionsrequises.append([self.monnom, "creervaisseau", []])
+    def creer_vaisseau(self,type_vaisseau):
+        self.actionsrequises.append([self.monnom, "creervaisseau", [type_vaisseau]])
 
     def ciblerflotte(self, idorigine, iddestination):
         self.actionsrequises.append([self.monnom, "ciblerflotte", [idorigine, iddestination]])
