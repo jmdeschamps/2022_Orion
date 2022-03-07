@@ -145,9 +145,6 @@ class Partie():
         self.ias=[]
         self.actionsafaire={}
         self.etoiles=[]
-        self.objets_spatiaux={"artefacts":{},
-                              ""}
-        self.
         self.creeretoiles(joueurs,1)
         
     def creeretoiles(self,joueurs,ias=1):
