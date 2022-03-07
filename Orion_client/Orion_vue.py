@@ -22,7 +22,7 @@ class Vue():
         self.infohud={}
         self.tailleminicarte=220
 
-        self.zoom=1
+        self.zoom=0.5
         self.maselection=None
 
         self.cadreactif=None

@@ -138,13 +138,16 @@ class Modele():
 class Partie():
     def __init__(self,parent,joueurs):
         self.parent=parent
-        self.largeur=7500 #self.parent.vue.root.winfo_screenwidth()
-        self.hauteur=7500 #self.parent.vue.root.winfo_screenheight()
-        self.nb_etoiles=500#int((self.hauteur*self.largeur)/300000)
+        self.largeur=15000 #self.parent.vue.root.winfo_screenwidth()
+        self.hauteur=15000 #self.parent.vue.root.winfo_screenheight()
+        self.nb_etoiles=2000#int((self.hauteur*self.largeur)/300000)
         self.joueurs={}
         self.ias=[]
         self.actionsafaire={}
         self.etoiles=[]
+        self.objets_spatiaux={"artefacts":{},
+                              ""}
+        self.
         self.creeretoiles(joueurs,1)
         
     def creeretoiles(self,joueurs,ias=1):
