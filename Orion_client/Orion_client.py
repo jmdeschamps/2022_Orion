@@ -23,7 +23,6 @@ from Orion_vue import *
 class Controleur():
     def __init__(self):
         self.monnom = self.generer_nom()  # nom de joueur, sert d'identifiant dans le jeu - ici, avec auto-generation
-
         self.joueur_createur = 0  # 1 quand un joueur "Créer une partie", peut Demarrer la partie
         self.cadrejeu = 0  # compte les tours dans la boucle de jeu (bouclersurjeu)
         self.actionsrequises = []  # les actions envoyées au serveur
@@ -100,8 +99,7 @@ class Controleur():
 
         self.modele = Partie(self,listejoueurs)  # on cree une partie pour les joueurs listes, qu'on conserve comme modele
         self.vue.initialiser_avec_modele(self.modele)  # on fournit le modele et mets la vue à jour
-        self.vue.changer_cadre("jeu")  # on change le cadre la fenetre pour passer dans l'interface de jeu
-        #self.vue.centrer_maison()
+        self.vue.changer_cadre("partie")  # on change le cadre la fenetre pour passer dans l'interface de jeu
 
         self.boucler_sur_jeu()  # on lance la boucle de jeu
 
@@ -212,19 +210,6 @@ class Controleur():
 
     ############        VOTRE CODE AU BESOIN      ######################
     ### Placez vos fonctions
-    def afficher_batiment(self, nom, batiment):
-        self.vue.afficher_batiment(nom, batiment)
-
-    def afficher_bio(self, bio):
-        self.vue.afficher_bio(bio)
-
-    def installer_batiment(self, nomjoueur, batiment):
-        x1, y1, x2, y2 = self.vue.afficher_batiment(nomjoueur, batiment)
-        return [x1, y1, x2, y2]
-
-    def trouver_valeurs(self):
-        vals = self.modele.trouver_valeurs()
-        return vals
 
     def creer_vaisseau(self,type_vaisseau):
         self.actionsrequises.append([self.monnom, "creervaisseau", [type_vaisseau]])

@@ -66,7 +66,7 @@ class Vue():
     def creer_cadres(self, urlserveur: str, monnom: str, testdispo: str):
         self.cadres["splash"] = self.creer_cadre_splash(urlserveur, monnom, testdispo)
         self.cadres["lobby"] = self.creer_cadre_lobby()
-        #self.cadres["jeu"] = self.creer_cadre_jeu()
+        self.cadres["partie"] = self.creer_cadre_partie()
 
     # le splash (ce qui 'splash' à l'écran lors du démarrage)
     # sera le cadre visuel initial lors du lancement de l'application
@@ -128,15 +128,13 @@ class Vue():
         # on retourne ce cadre pour l'insérer dans le dictionnaires des cadres
         return self.cadrelobby
 
-    def initialiser_avec_modele(self,modele):
-        self.nom=self.parent.monnom
-        self.modele=modele
+    def creer_cadre_partie(self):
         self.cadrepartie=Frame(self.cadreapp,width=600,height=200, bg="yellow")
         self.cadrejeu=Frame(self.cadrepartie,width=600,height=200,bg="teal")
 
         self.scrollX=Scrollbar(self.cadrejeu,orient=HORIZONTAL)
         self.scrollY=Scrollbar(self.cadrejeu,orient=VERTICAL)
-        self.canevas=Canvas(self.cadrejeu,width=800,height=600,scrollregion=(0,0,modele.largeur,modele.hauteur),
+        self.canevas=Canvas(self.cadrejeu,width=800,height=600,
                             xscrollcommand = self.scrollX.set,
                             yscrollcommand = self.scrollY.set,bg="grey11")
 
@@ -151,9 +149,22 @@ class Vue():
         self.cadrejeu.rowconfigure(0,weight=1)
 
         self.canevas.bind("<Button>",self.cliquecosmos)
+        self.creer_cadre_outils()
 
         self.cadrejeu.pack(side=LEFT,expand=1,fill=BOTH)
+        return self.cadrepartie
 
+    def initialiser_avec_modele(self,modele):
+        self.nom=self.parent.monnom
+        self.modele=modele
+        self.canevas.config(scrollregion=(0,0,modele.largeur,modele.hauteur))
+
+        self.labid.config(text=self.nom)
+        self.labid.config(fg=self.modele.joueurs[self.nom].couleur)
+
+        self.afficherdecor(modele)
+        
+    def creer_cadre_outils(self):
         self.cadreoutils=Frame(self.cadrepartie,width=200,height=200,bg="darkgrey")
         self.cadreoutils.pack(side=LEFT,fill=Y)
 
@@ -161,14 +172,14 @@ class Vue():
         self.cadreinfo.pack(fill=Y)
         self.cadreinfogen=Frame(self.cadreinfo,width=200,height=200,bg="grey50")
         self.cadreinfogen.pack()
-        self.labid=Label(self.cadreinfogen,text=self.nom,fg=modele.joueurs[self.nom].couleur)
+        self.labid=Label(self.cadreinfogen,text="Inconnu")
         self.labid.bind("<Button>",self.afficherplanemetemere)
         self.labid.pack()
         self.cadreinfochoix=Frame(self.cadreinfo,height=200,width=200,bg="grey30")
         self.cadreinfochoix.pack()
-        self.btncreervaisseau=Button(self.cadreinfo,text="Vaisseau")
+        self.btncreervaisseau=Button(self.cadreinfochoix,text="Vaisseau")
         self.btncreervaisseau.bind("<Button>",self.creervaisseau)
-        self.btncreercargo=Button(self.cadreinfo,text="Cargo")
+        self.btncreercargo=Button(self.cadreinfochoix,text="Cargo")
         self.btncreercargo.bind("<Button>",self.creervaisseau)
         self.lbselectecible=Label(self.cadreinfo,text="Choisir cible",bg="darkgrey")
 
@@ -177,9 +188,7 @@ class Vue():
         self.canevasMini=Canvas(self.cadreminimap,width=200,height=200,bg="pink")
         self.canevasMini.bind("<Button>",self.moveCanevas)
         self.canevasMini.pack()
-        self.cadreminimap.pack()
-
-        self.afficherdecor(modele)
+        self.cadreminimap.pack(side=BOTTOM)
 
         self.cadres["jeu"] = self.cadrepartie
 
@@ -199,16 +208,6 @@ class Vue():
         # scroll avec roulette
         self.canevas.bind("<MouseWheel>", self.defiler_vertical)
         self.canevas.bind("<Control-MouseWheel>", self.defiler_horizon)
-
-        # # acgtions liées aux objets dessinés par tag
-        # self.canevas.tag_bind("batiment", "<Button-1>", self.creer_entite)
-        # self.canevas.tag_bind("perso", "<Button-1>", self.ajouter_selection)
-        # self.canevas.tag_bind("arbre", "<Button-1>", self.ramasser_ressource)
-        # self.canevas.tag_bind("aureus", "<Button-1>", self.ramasser_ressource)
-        # self.canevas.tag_bind("roche", "<Button-1>", self.ramasser_ressource)
-        # self.canevas.tag_bind("baie", "<Button-1>", self.ramasser_ressource)
-        # self.canevas.tag_bind("eau", "<Button-1>", self.ramasser_ressource)
-        # self.canevas.tag_bind("daim", "<Button-1>", self.chasser_ressource)
 
     def calc_objets(self,evt):
         print("Univers = ",len(self.canevas.find_all()))
@@ -310,14 +309,23 @@ class Vue():
 
 
 ####################################################################################################
+
+
     def moveCanevas(self,evt):
         x=evt.x
         y=evt.y
-        px=self.mod.largeur/x/100
-        py=self.mod.hauteur/y/100
-        self.canevas.xview(MOVETO,px)
-        self.canevas.yview(MOVETO,py)
-        print("SCROLL",px,py)
+
+        pctx=x/self.tailleminicarte
+        pcty=y/self.tailleminicarte
+
+        xl=(self.canevas.winfo_width()/2)/self.modele.largeur
+        yl=(self.canevas.winfo_height()/2)/self.modele.hauteur
+
+        self.canevas.xview_moveto(pctx-xl)
+        self.canevas.yview_moveto(pcty-yl)
+        xl=self.canevas.winfo_width()
+        yl=self.canevas.winfo_height()
+
 
     def afficherdecor(self, mod):
 
@@ -331,20 +339,13 @@ class Vue():
         for i in mod.etoiles:
             t = i.taille * self.zoom
             col = random.choice(["LightYellow", "azure1", "pink"])
-            self.canevas.create_oval((i.x) - t,
-                                     (i.y) - t,
-                                     (i.x) + t,
-                                     (i.y) + t,
-                                     fill="grey80",
-                                     outline=col,
+            self.canevas.create_oval(i.x - t, i.y - t, i.x + t, i.y + t,
+                                     fill="grey80", outline=col,
                                      tags=(i.proprietaire, "etoile", str(i.id)))
         for i in mod.joueurs.keys():
             for j in mod.joueurs[i].etoilescontrolees:
                 t = j.taille * self.zoom
-                self.canevas.create_oval((j.x) - t,
-                                         (j.y) - t,
-                                         (j.x) + t,
-                                         (j.y) + t,
+                self.canevas.create_oval(j.x - t, j.y - t, j.x + t, j.y + t,
                                          fill=mod.joueurs[i].couleur,
                                          tags=(j.proprietaire, "etoile", str(j.id), "possession"))
                 print("MA PLANETE", j.x, j.y)
@@ -353,72 +354,20 @@ class Vue():
         for i in mod.ias:
             for j in i.etoilescontrolees:
                 t = j.taille * self.zoom
-                self.canevas.create_oval((j.x) - t,
-                                         (j.y) - t,
-                                         (j.x) + t,
-                                         (j.y) + t,
+                self.canevas.create_oval(j.x - t, j.y - t, j.x + t, j.y + t,
                                          fill=i.couleur,
                                          tags=(j.proprietaire, "etoile", str(j.id), "possession"))
 
 
-    def afficherdecor1(self,mod):
-
-        for i in range(len(mod.etoiles)*50):
-            x=random.randrange(int(mod.largeur*self.zoom))
-            y=random.randrange(int(mod.hauteur*self.zoom))
-            n=random.randrange(3)+1
-            col=random.choice(["LightYellow","azure1","pink"])
-            self.canevas.create_oval(x,y,x+n,y+n,fill=col,tags=("fond",))
-
-        for i in mod.etoiles:
-            t=i.taille*self.zoom
-            col=random.choice(["LightYellow","azure1","pink"])
-            self.canevas.create_oval((i.x*self.zoom)-t,
-                                     (i.y*self.zoom)-t,
-                                     (i.x*self.zoom)+t,
-                                     (i.y*self.zoom)+t,
-                                     fill="grey80",
-                                     outline=col,
-                                     tags=(i.proprietaire,"etoile",str(i.id)))
-        for i in mod.joueurs.keys():
-            for j in mod.joueurs[i].etoilescontrolees:
-                t=j.taille*self.zoom
-                self.canevas.create_oval((j.x*self.zoom)-t,
-                                         (j.y*self.zoom)-t,
-                                         (j.x*self.zoom)+t,
-                                         (j.y*self.zoom)+t,
-                                         fill=mod.joueurs[i].couleur,
-                                     tags=(j.proprietaire,"etoile",str(j.id),"possession"))
-                print("MA PLANETE",j.x,j.y)
-        # dessine IAs
-
-        for i in mod.ias:
-            for j in i.etoilescontrolees:
-                t=j.taille*self.zoom
-                self.canevas.create_oval((j.x*self.zoom)-t,
-                                         (j.y*self.zoom)-t,
-                                         (j.x*self.zoom)+t,
-                                         (j.y*self.zoom)+t,
-                                         fill=i.couleur,
-                                     tags=(j.proprietaire,"etoile",str(j.id),"possession"))
-
-
-
-        #self.afficher_afficher_jeu()
-                
     def afficherplanemetemere(self,evt):
-        print("HELLLLLLLO MERE PLANETE")
-        j=self.modele.joueurs[self.nom]
-        couleur=j.couleur
-        x=j.etoilemere.x
-        y=j.etoilemere.y
-        t=10*self.zoom
-        self.canevas.create_oval((x*self.zoom)-t,
-                                 (y*self.zoom)-t,
-                                 (x*self.zoom)+t,
-                                 (y*self.zoom)+t,
-                                 dash=(3,3),width=2,outline=couleur,
-                                 tags=("etoilemere","marqueur"))
+        # j=self.modele.joueurs[self.nom]
+        # couleur=j.couleur
+        x=self.modele.joueurs[self.nom].etoilemere.x
+        y=self.modele.joueurs[self.nom].etoilemere.y
+        # t=10*self.zoom
+        # self.canevas.create_oval(x-t, y-t, x+t,y+t,
+        #                          dash=(3,3),width=2,outline=couleur,
+        #                          tags=("etoilemere","marqueur"))
 
 
         x1=self.canevas.winfo_width()/2
@@ -433,7 +382,6 @@ class Vue():
 
     def creervaisseau(self,evt):
         type_vaisseau=evt.widget.cget("text")
-        print("Creer vaisseau",type_vaisseau)
         self.parent.creer_vaisseau(type_vaisseau)
         self.maselection=None
         self.canevas.delete("marqueur")
@@ -452,10 +400,7 @@ class Vue():
                         x = i.x
                         y = i.y
                         t = 10 * self.zoom
-                        self.canevas.create_oval((x) - t,
-                                                 (y) - t,
-                                                 (x) + t,
-                                                 (y) + t,
+                        self.canevas.create_oval(x - t, y - t, x + t, y + t,
                                                  dash=(2, 2), outline=mod.joueurs[self.nom].couleur,
                                                  tags=("select", "marqueur"))
             elif self.maselection[1] == "flotte":
@@ -466,14 +411,10 @@ class Vue():
                             x = i.x
                             y = i.y
                             t = 10 * self.zoom
-                            self.canevas.create_rectangle((x) - t,
-                                                          (y) - t,
-                                                          (x) + t,
-                                                          (y) + t,
+                            self.canevas.create_rectangle(x - t, y - t, x + t, y + t,
                                                           dash=(2, 2), outline=mod.joueurs[self.nom].couleur,
                                                           tags=("select", "marqueur"))
-
-
+        # afficher asset des joueurs
         for i in mod.joueurs.keys():
             i = mod.joueurs[i]
             for k in i.flotte:
@@ -481,19 +422,13 @@ class Vue():
                     j=i.flotte[k][j]
                     tailleF = j.taille * self.zoom
                     if k=="Vaisseau":
-                        self.canevas.create_rectangle((j.x - tailleF),
-                                                      (j.y - tailleF),
-                                                      (j.x + tailleF),
-                                                      (j.y + tailleF),
-                                                      fill=i.couleur,
+                        self.canevas.create_rectangle((j.x - tailleF), (j.y - tailleF),
+                                                      (j.x + tailleF), (j.y + tailleF), fill=i.couleur,
                                                       tags=(j.proprietaire, "flotte", str(j.id), "artefact"))
                     else:
-                        self.canevas.create_oval((j.x - tailleF),
-                                                      (j.y - tailleF),
-                                                      (j.x + tailleF),
-                                                      (j.y + tailleF),
-                                                      fill=i.couleur,
-                                                      tags=(j.proprietaire, "flotte", str(j.id), "artefact"))
+                        self.canevas.create_oval((j.x - tailleF), (j.y - tailleF),
+                                                 (j.x + tailleF), (j.y + tailleF), fill=i.couleur,
+                                                 tags=(j.proprietaire, "flotte", str(j.id), "artefact"))
 
         for i in mod.ias:
             for j in i.flotte["Vaisseau"]:
@@ -504,64 +439,6 @@ class Vue():
                 x2, y2 = hlp.getAngledPoint(j.ang - math.pi, j.taille / 2, j.x, j.y)
                 self.canevas.create_line(x1, y1, x2, y2, width=3, fill=i.couleur,
                                          tags=(j.proprietaire, "flotte", str(j.id), "artefact"))
-
-
-    def afficher_jeu1(self):
-        mod=self.modele
-        self.canevas.delete("artefact")
-        
-        if self.maselection!=None:
-            joueur=mod.joueurs[self.maselection[0]]
-            if self.maselection[1]=="etoile":
-                for i in joueur.etoilescontrolees:
-                    if i.id == self.maselection[2]:
-                        x=i.x
-                        y=i.y
-                        t=10*self.zoom
-                        self.canevas.create_oval((x*self.zoom)-t,
-                                                 (y*self.zoom)-t,
-                                                 (x*self.zoom)+t,
-                                                 (y*self.zoom)+t,
-                                                 dash=(2,2),outline=mod.joueurs[self.nom].couleur,
-                                                 tags=("select","marqueur"))
-            elif self.maselection[1]=="flotte":
-                for i in joueur.flotte:
-                    if i.id == self.maselection[2]:
-                        x=i.x
-                        y=i.y
-                        t=10*self.zoom
-                        self.canevas.create_rectangle((x*self.zoom)-t,
-                                                      (y*self.zoom)-t,
-                                                      (x*self.zoom)+t,
-                                                      (y*self.zoom)+t,
-                                                      dash=(2,2),outline=mod.joueurs[self.nom].couleur,
-                                                      tags=("select","marqueur"))
-            
-        tailleF=5*self.zoom
-        for i in mod.joueurs.keys():
-            i=mod.joueurs[i]
-            for j in i.flotte:
-                self.canevas.create_rectangle((j.x-tailleF)*self.zoom,
-                                              (j.y-tailleF)*self.zoom,
-                                              (j.x+tailleF)*self.zoom,
-                                              (j.y+tailleF)*self.zoom,
-                                              fill=i.couleur,
-                                              tags=(j.proprietaire,"flotte",str(j.id),"artefact"))
-                
-        for i in mod.ias:
-            for j in i.flotte:
-                # self.canevas.create_rectangle((j.x-tailleF)*self.zoom,
-                #                               (j.y-tailleF)*self.zoom,
-                #                               (j.x+tailleF)*self.zoom,
-                #                               (j.y+tailleF)*self.zoom,
-                #                               fill=i.couleur,
-                #                      tags=(j.proprietaire,"flotte",str(j.id),"artefact"))
-
-                x1, y1 = hlp.getAngledPoint(j.ang, j.taille/2, j.x, j.y)
-
-                x2, y2 = hlp.getAngledPoint(j.ang-math.pi, j.taille/2, j.x, j.y)
-                self.canevas.create_line(x1,y1,x2,y2, width=3, fill=i.couleur,
-                                     tags=(j.proprietaire,"flotte",str(j.id),"artefact"))
 
 
     def cliquecosmos(self,evt):
@@ -726,48 +603,4 @@ class Action():
             self.parent.canevasaction.config(scrollregion=(0,0,cl,fh+60))
 
 
-    def envoyer_chat(self,evt):
-        txt=self.parent.entreechat.get()
-        joueur=self.parent.joueurs.get()
-        if joueur:
-            action=[self.parent.monnom,"chatter",[self.parent.monnom+": "+txt,self.parent.monnom,joueur]]
-            self.parent.parent.actionsrequises.append(action)
-
-    def chatter(self):
-        if self.chaton==0:
-            x1,x2=self.parent.scrollH.get()
-            x3=self.parent.modele.aireX*x1
-            y1,y2=self.parent.scrollV.get()
-            y3=self.parent.modele.aireY*y1
-            self.parent.cadrechaton=self.parent.canevas.create_window(x3,y3,
-                                                window=self.parent.cadrechat,
-                                                anchor=N+W)
-            self.parent.btnchat.config(bg="SystemButtonFace")
-            self.chaton=1
-        else:
-            self.parent.canevas.delete(self.parent.cadrechaton)
-            self.parent.cadrechaton=0
-            self.chaton=0
-
-    def aider(self):
-        if self.aideon==0:
-            x1,x2=self.parent.scrollH.get()
-            x3=self.parent.modele.aireX*x2
-            y1,y2=self.parent.scrollV.get()
-            y3=self.parent.modele.aireY*y1
-            self.aideon=self.parent.canevas.create_window(x3,y3,
-                                                window=self.parent.cadreaide,
-                                                anchor=N+E)
-        else:
-            self.parent.canevas.delete(self.aideon)
-            self.aideon=0
-
-
-    ### FIN des methodes pour lancer la partie
-
-class Champ(Label):
-    def __init__(self,master,*args, **kwargs):
-        Label.__init__(self,master,*args, **kwargs)
-        self.config(font=("arial",13,"bold"))
-        self.config(bg="goldenrod3")
 

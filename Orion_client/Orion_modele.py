@@ -23,8 +23,8 @@ class Vaisseau():
         self.y=y
         self.cargo=0
         self.energie=100
-        self.taille=4
-        self.vitesse=random.randrange(20)+2
+        self.taille=5
+        self.vitesse=2
         self.cible=0
         self.ang=0
 
@@ -57,7 +57,7 @@ class Cargo(Vaisseau):
         self.cargo=1000
         self.energie=500
         self.taille=6
-        self.vitesse=3
+        self.vitesse=1
         self.cible=0
         self.ang=0
               
@@ -138,9 +138,9 @@ class Modele():
 class Partie():
     def __init__(self,parent,joueurs):
         self.parent=parent
-        self.largeur=8000 #self.parent.vue.root.winfo_screenwidth()
-        self.hauteur=8000 #self.parent.vue.root.winfo_screenheight()
-        self.nb_etoiles=int((self.hauteur*self.largeur)/300000)
+        self.largeur=7500 #self.parent.vue.root.winfo_screenwidth()
+        self.hauteur=7500 #self.parent.vue.root.winfo_screenheight()
+        self.nb_etoiles=500#int((self.hauteur*self.largeur)/300000)
         self.joueurs={}
         self.ias=[]
         self.actionsafaire={}
