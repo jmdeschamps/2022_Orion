@@ -162,7 +162,7 @@ class Partie():
         self.cadre_courant=None
         self.creeretoiles(joueurs,1)
         
-    def creeretoiles(self,joueurs,ias=1):
+    def creeretoiles(self,joueurs,ias=0):
         bordure=10
         for i in range(self.nb_etoiles):
             x=random.randrange(self.largeur-(2*bordure))+bordure
@@ -187,6 +187,7 @@ class Partie():
                   "SeaGreen1","turquoise1","firebrick1"]
         for i in range(ias):
             self.joueurs["IA_"+str(i)]=IA(self,"IA_"+str(i),etoile_occupee.pop(0),couleursia.pop(0))
+            print("IA_"+str(i))
         
     ##############################################################################
     def jouer_prochain_coup(self,cadre):

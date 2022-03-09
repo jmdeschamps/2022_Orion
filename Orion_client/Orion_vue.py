@@ -77,7 +77,7 @@ class Vue():
         # creation ds divers widgets (champ de texte 'Entry' et boutons cliquables (Button)
         self.etatdujeu = Label(text=testdispo, font=("Arial", 18), borderwidth=2, relief=RIDGE)
         self.nomsplash = Entry(font=("Arial", 14))
-        self.urlsplash = Entry(font=("Arial", 14))
+        self.urlsplash = Entry(font=("Arial", 14),width=42)
         self.btnurlconnect = Button(text="Connecter", font=("Arial", 12), command=self.connecter_serveur)
         # on insère les infos par défaut (nom url) et reçu au démarrage (dispo)
         self.nomsplash.insert(0, monnom)
@@ -85,8 +85,8 @@ class Vue():
         # on les place sur le canevassplash
         self.canevassplash.create_window(320, 100, window=self.etatdujeu, width=400, height=30)
         self.canevassplash.create_window(320, 200, window=self.nomsplash, width=400, height=30)
-        self.canevassplash.create_window(240, 250, window=self.urlsplash, width=200, height=30)
-        self.canevassplash.create_window(420, 250, window=self.btnurlconnect, width=100, height=30)
+        self.canevassplash.create_window(210, 250, window=self.urlsplash, width=360, height=30)
+        self.canevassplash.create_window(480, 250, window=self.btnurlconnect, width=100, height=30)
         # les boutons d'actions
         self.btncreerpartie = Button(text="Creer partie", font=("Arial", 12), state=DISABLED, command=self.creer_partie)
         self.btninscrirejoueur = Button(text="Inscrire joueur", font=("Arial", 12), state=DISABLED, command=self.inscrire_joueur)
@@ -177,7 +177,7 @@ class Vue():
         self.cadreoutils.pack(side=LEFT,fill=Y)
 
         self.cadreinfo=Frame(self.cadreoutils,width=200,height=200,bg="darkgrey")
-        self.cadreinfo.pack(fill=Y)
+        self.cadreinfo.pack(fill=BOTH)
 
         self.cadreinfogen=Frame(self.cadreinfo,width=200,height=200,bg="grey50")
         self.cadreinfogen.pack()
@@ -186,7 +186,7 @@ class Vue():
         self.labid.pack()
 
         self.cadreinfochoix=Frame(self.cadreinfo,height=200,width=200,bg="grey30")
-        self.cadreinfochoix.pack()
+        self.cadreinfochoix.pack(expand=1,fill=Y)
         self.btncreervaisseau=Button(self.cadreinfochoix,text="Vaisseau")
         self.btncreervaisseau.bind("<Button>",self.creervaisseau)
         self.btncreercargo=Button(self.cadreinfochoix,text="Cargo")
