@@ -217,6 +217,12 @@ class Controleur():
     def ciblerflotte(self, idorigine, iddestination):
         self.actionsrequises.append([self.monnom, "ciblerflotte", [idorigine, iddestination]])
 
+    def afficher_etoile(self,joueur,cible):
+        self.vue.afficher_etoile(joueur,cible)
+
+    def lister_objet(self,objet,id):
+        self.vue.lister_objet(objet,id)
+
 if __name__=="__main__":
     c=Controleur()
     print("End Orion_mini")

@@ -5,15 +5,17 @@ import ast
 from Id import *
 from helper import Helper as hlp
         
-class etoile():
+class Etoile():
     def __init__(self,x,y):
         self.id=get_prochain_id()
-        self.proprietaire="inconnu"
+        self.proprietaire=""
         self.x=x
         self.y=y
         self.taille=random.randrange(4,8)
-        self.ressource=random.randrange(10)+1
-        
+        self.ressources= {"metal":0,
+                          "energie":0,
+                          "existentielle":0}
+
 class Vaisseau():
     def __init__(self,parent,nom,x,y):
         self.parent=parent
@@ -21,36 +23,37 @@ class Vaisseau():
         self.proprietaire=nom
         self.x=x
         self.y=y
-        self.cargo=0
+        self.espace_cargo=0
         self.energie=100
         self.taille=5
         self.vitesse=2
         self.cible=0
-        self.ang=0
+        self.angle_cible=0
 
     def jouer_prochain_coup(self,trouver_nouveau=0):
         if self.cible!=0:
-            self.avancer()
+            return self.avancer()
         elif trouver_nouveau:
             cible = random.choice(self.parent.parent.etoiles)
             self.acquerir_cible(cible)
-    # else:
-    #    i.cible=random.choice(self.parent.etoiles)
 
     def acquerir_cible(self,cible):
         self.cible=cible
-        self.ang = hlp.calcAngle(self.x, self.y, self.cible.x, self.cible.y)
+        self.angle_cible = hlp.calcAngle(self.x, self.y, self.cible.x, self.cible.y)
 
     def avancer(self):
         if self.cible!=0:
             x=self.cible.x
             y=self.cible.y
-            x1,y1=hlp.getAngledPoint(self.ang,self.vitesse,self.x,self.y)
-            self.x,self.y=x1,y1 #int(x1),int(y1)
+            self.x,self.y=hlp.getAngledPoint(self.angle_cible,self.vitesse,self.x,self.y)
             if hlp.calcDistance(self.x,self.y,x,y) <=self.vitesse:
-                print("RESSOURCES...",self.cible.id,self.cible.ressource,self.cible.proprietaire)
-                self.cible.proprietaire=self.proprietaire
-                self.cible=0
+                self.parent.log.append(["Arrive:",self.parent.parent.cadre_courant,self.id,self.cible.id,self.cible.proprietaire])
+                if not self.cible.proprietaire:
+                    self.cible.proprietaire=self.proprietaire
+                    cible=self.cible
+                    self.cible=0
+                    return ["rendu",cible]
+
 class Cargo(Vaisseau):
     def __init__(self,parent,nom,x,y):
         Vaisseau.__init__(self,parent,nom,x,y)
@@ -69,6 +72,7 @@ class Joueur():
         self.etoilemere=etoilemere
         self.etoilemere.proprietaire=self.nom
         self.couleur=couleur
+        self.log=[]
         self.etoilescontrolees=[etoilemere]
         self.flotte={"Vaisseau":{},
                      "Cargo":{}}
@@ -82,6 +86,9 @@ class Joueur():
         else:
             v=Vaisseau(self,self.nom,self.etoilemere.x+10,self.etoilemere.y)
         self.flotte[type_vaisseau][v.id]=v
+
+        if self.nom==self.parent.parent.monnom:
+            self.parent.parent.lister_objet(type_vaisseau,v.id)
         return v
         
     def ciblerflotte(self,ids):
@@ -100,13 +107,17 @@ class Joueur():
                     return
         
         
-    def prochaineaction(self):
+    def jouer_prochain_coup(self):
+        self.avancer_flotte()
+
+    def avancer_flotte(self,chercher_nouveau=0):
         for i in self.flotte:
             for j in self.flotte[i]:
                 j=self.flotte[i][j]
-                j.jouer_prochain_coup()
-            
-    
+                rep=j.jouer_prochain_coup(chercher_nouveau)
+                if rep:
+                    self.etoilescontrolees.append(rep[1])
+                    self.parent.parent.afficher_etoile(self.nom,rep[1])
 
 # IA- nouvelle classe de joueur
 class IA(Joueur):
@@ -116,11 +127,14 @@ class IA(Joueur):
         self.cooldown=20
         print("IA",self.etoilemere.x,self.etoilemere.y)
         
-    def prochaineaction(self):
-        for i in self.flotte:
-            for j in self.flotte[i]:
-                j=self.flotte[i][j]
-                j.jouer_prochain_coup(1)
+    def jouer_prochain_coup(self):
+        # for i in self.flotte:
+        #     for j in self.flotte[i]:
+        #         j=self.flotte[i][j]
+        #         rep=j.jouer_prochain_coup(1)
+        #         if rep:
+        #             self.etoilescontrolees.append(rep[1])
+        self.avancer_flotte(1)
                 
         if self.cooldown==0:
             v=self.creervaisseau(["Vaisseau"])
@@ -138,13 +152,14 @@ class Modele():
 class Partie():
     def __init__(self,parent,joueurs):
         self.parent=parent
-        self.largeur=15000 #self.parent.vue.root.winfo_screenwidth()
-        self.hauteur=15000 #self.parent.vue.root.winfo_screenheight()
-        self.nb_etoiles=2000#int((self.hauteur*self.largeur)/300000)
+        self.largeur=5000 #self.parent.vue.root.winfo_screenwidth()
+        self.hauteur=5000 #self.parent.vue.root.winfo_screenheight()
+        self.nb_etoiles=300#int((self.hauteur*self.largeur)/300000)
         self.joueurs={}
         self.ias=[]
-        self.actionsafaire={}
+        self.actions_a_faire={}
         self.etoiles=[]
+        self.cadre_courant=None
         self.creeretoiles(joueurs,1)
         
     def creeretoiles(self,joueurs,ias=1):
@@ -152,45 +167,47 @@ class Partie():
         for i in range(self.nb_etoiles):
             x=random.randrange(self.largeur-(2*bordure))+bordure
             y=random.randrange(self.hauteur-(2*bordure))+bordure
-            self.etoiles.append(etoile(x,y))
+            self.etoiles.append(Etoile(x,y))
         np=len(joueurs)+ias
-        planes=[]
+        etoile_occupee=[]
         while np:
             p=random.choice(self.etoiles)
-            if p not in planes:
-                planes.append(p)
+            if p not in etoile_occupee:
+                etoile_occupee.append(p)
                 self.etoiles.remove(p)
                 np-=1
+
         couleurs=["red","blue","lightgreen","yellow",
                   "lightblue","pink","gold","purple"]
         for i in joueurs:
-            self.joueurs[i]=Joueur(self,i,planes.pop(0),couleurs.pop(0))
+            self.joueurs[i]=Joueur(self,i,etoile_occupee.pop(0),couleurs.pop(0))
         
-        # IA- creation des ias - max 2 
+        # IA- creation des ias
         couleursia=["orange","green","cyan",
                   "SeaGreen1","turquoise1","firebrick1"]
         for i in range(ias):
-            self.ias.append(IA(self,"IA_"+str(i),planes.pop(0),couleursia.pop(0)))  
+            self.joueurs["IA_"+str(i)]=IA(self,"IA_"+str(i),etoile_occupee.pop(0),couleursia.pop(0))
         
     ##############################################################################
-    # insertion de la preochaine action demandée par le joueur<
     def jouer_prochain_coup(self,cadre):
-        if cadre in self.actionsafaire:
-            for i in self.actionsafaire[cadre]:
-                #print(i)
+        self.cadre_courant=cadre
+        # insertion de la prochaine action demandée par le joueur
+        if cadre in self.actions_a_faire:
+            for i in self.actions_a_faire[cadre]:
                 self.joueurs[i[0]].actions[i[1]](i[2])
                 """
                 i a la forme suivante [nomjoueur, action, [arguments]
                 alors self.joueurs[i[0]] -> trouve l'objet représentant le joueur de ce nom
                 """
-            del self.actionsafaire[cadre]
-                
+            del self.actions_a_faire[cadre]
+        # demander aux objets qui peuvent agir de jouer leur prochain coup
+        # aux joueurs en premier
         for i in self.joueurs:
-            self.joueurs[i].prochaineaction()
-            
-        # IA- appelle prochaine action
-        for i in self.ias:
-            i.prochaineaction()
+            self.joueurs[i].jouer_prochain_coup()
+        #
+        # # puis a l'IA
+        # for i in self.ias:
+        #     i.jouer_prochain_coup()
 
     #############################################################################
     # ATTENTION : NE PAS TOUCHER
@@ -203,8 +220,9 @@ class Partie():
                     print("PEUX PASSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS")
                 action = ast.literal_eval(i[1])
 
-                if cadrecle not in self.actionsafaire.keys():
-                    self.actionsafaire[cadrecle] = action
+                if cadrecle not in self.actions_a_faire.keys():
+                    self.actions_a_faire[cadrecle] = action
                 else:
-                    self.actionsafaire[cadrecle].append(action)
+                    self.actions_a_faire[cadrecle].append(action)
+    # NE PAS TOUCHER - FIN
  ##############################################################################
