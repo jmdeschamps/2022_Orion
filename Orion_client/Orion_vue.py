@@ -20,7 +20,7 @@ class Vue():
         self.cadrechaton=0
         self.textchat=""
         self.infohud={}
-        self.tailleminicarte=220
+        self.taille_minimap=240
 
         self.zoom=0.8
         self.maselection=None
@@ -210,9 +210,9 @@ class Vue():
         self.cadreinfoliste.pack(side=BOTTOM,expand=1,fill=BOTH)
 
         self.cadreminimap=Frame(self.cadreoutils,height=200,width=200,bg="black")
-        self.canevasMini=Canvas(self.cadreminimap,width=200,height=200,bg="pink")
-        self.canevasMini.bind("<Button>",self.moveCanevas)
-        self.canevasMini.pack()
+        self.canevas_minimap=Canvas(self.cadreminimap,width=self.taille_minimap,height=self.taille_minimap,bg="pink")
+        self.canevas_minimap.bind("<Button>",self.moveCanevas)
+        self.canevas_minimap.pack()
         self.cadreminimap.pack(side=BOTTOM)
 
         self.cadres["jeu"] = self.cadrepartie
@@ -296,8 +296,8 @@ class Vue():
         x=evt.x
         y=evt.y
 
-        pctx=x/self.tailleminicarte
-        pcty=y/self.tailleminicarte
+        pctx=x/self.taille_minimap
+        pcty=y/self.taille_minimap
 
         xl=(self.canevas.winfo_width()/2)/self.modele.largeur
         yl=(self.canevas.winfo_height()/2)/self.modele.hauteur
@@ -329,15 +329,20 @@ class Vue():
                 self.canevas.create_oval(j.x - t, j.y - t, j.x + t, j.y + t,
                                          fill=mod.joueurs[i].couleur,
                                          tags=(j.proprietaire, str(j.id),  "Etoile"))
-                print("MA PLANETE", j.x, j.y)
+                minix=j.x/self.modele.largeur*self.taille_minimap
+                miniy=j.y/self.modele.hauteur*self.taille_minimap
+                self.canevas_minimap.create_rectangle(minix, miniy, minix + 3, miniy + 3,
+                                         fill=mod.joueurs[i].couleur,
+                                         tags=(j.proprietaire, str(j.id), "Etoile"))
+
         # dessine IAs
 
-        for i in mod.ias:
-            for j in i.etoilescontrolees:
-                t = j.taille * self.zoom
-                self.canevas.create_oval(j.x - t, j.y - t, j.x + t, j.y + t,
-                                         fill=i.couleur,
-                                         tags=(j.proprietaire, str(j.id), "Etoile"))
+        # for i in mod.ias:
+        #     for j in i.etoilescontrolees:
+        #         t = j.taille * self.zoom
+        #         self.canevas.create_oval(j.x - t, j.y - t, j.x + t, j.y + t,
+        #                                  fill=i.couleur,
+        #                                  tags=(j.proprietaire, str(j.id), "Etoile"))
 
 
     def centrer_planemetemere(self,evt):

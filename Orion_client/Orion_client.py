@@ -33,7 +33,7 @@ class Controleur():
         self.maindelai = 50  # delai en ms de la boucle de jeu
         self.moduloappeler_serveur = 2  # frequence des appel au serveur, evite de passer son temps a communiquer avec le serveur
         self.urlserveur = "http://127.0.0.1:8000"  # 127.0.0.1 pour tests,"http://votreidentifiant.pythonanywhere.com" pour web
-
+        self.urlserveur= "http://jmdeschamps.pythonanywhere.com"
         self.modele = None  # la variable contenant la partie, après initialiserpartie()
         self.vue = Vue(self, self.urlserveur, self.monnom,
                        "Non connecté")  # la vue pour l'affichage et les controles du jeu

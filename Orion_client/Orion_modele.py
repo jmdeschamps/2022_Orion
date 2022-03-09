@@ -123,7 +123,7 @@ class Joueur():
 class IA(Joueur):
     def __init__(self,parent,nom,etoilemere,couleur):
         Joueur.__init__(self, parent, nom, etoilemere, couleur)  
-        self.cooldownmax=50
+        self.cooldownmax=200
         self.cooldown=20
         print("IA",self.etoilemere.x,self.etoilemere.y)
         
@@ -140,7 +140,7 @@ class IA(Joueur):
             v=self.creervaisseau(["Vaisseau"])
             cible = random.choice(self.parent.etoiles)
             v.acquerir_cible(cible)
-            self.cooldown=random.randrange(self.cooldownmax) + (self.cooldownmax/2)
+            self.cooldown=random.randrange(self.cooldownmax) + self.cooldownmax
         else:
             self.cooldown-=1
 
