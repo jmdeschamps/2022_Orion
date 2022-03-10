@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# version avec AI ajoute
+
 import os,os.path
 import sys
 import urllib.request
@@ -40,6 +40,8 @@ class Controleur():
 
         self.vue.root.mainloop()  # la boucle des evenements (souris, click, clavier)
 
+    ######################################################################################################
+    ### FONCTIONS RESERVEES - INTERDICTION DE MODIFIER SANS AUTORISATION PREALABLE SAUF CHOIX DE RANDOM SEED LIGNE 94-95
     def connecter_serveur(self, url_serveur):
         self.urlserveur = url_serveur  # le dernier avant le clic
         self.boucler_sur_splash()
@@ -197,6 +199,10 @@ class Controleur():
         rep = json.loads(rep)
         return rep
 
+    ###  FIN DE L'INTERDICTION DE MODIFICATION
+    #################################################################################
+
+
     ############            OUTILS           ###################
     # generateur de nouveau nom, peut y avoir collision
     def generer_nom(self):
@@ -208,13 +214,12 @@ class Controleur():
         self.actionsrequises = action
         self.root.after(500, self.root.destroy)
 
-    ############        VOTRE CODE AU BESOIN      ######################
-    ### Placez vos fonctions
+    ############        VOTRE CODE      ######################
 
     def creer_vaisseau(self,type_vaisseau):
         self.actionsrequises.append([self.mon_nom, "creervaisseau", [type_vaisseau]])
 
-    def ciblerflotte(self, idorigine, iddestination):
+    def cibler_flotte(self, idorigine, iddestination):
         self.actionsrequises.append([self.mon_nom, "ciblerflotte", [idorigine, iddestination]])
 
     def afficher_etoile(self,joueur,cible):

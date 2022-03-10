@@ -41,7 +41,7 @@ class Vue():
             self.root.after(500, self.root.destroy)
 
 ####### INTERFACES GRAPHIQUES
-    def changer_cadre(self,nomcadre: str):
+    def changer_cadre(self,nomcadre):
         cadre=self.cadres[nomcadre]
         if self.cadre_actif:
             self.cadre_actif.pack_forget()
@@ -56,7 +56,7 @@ class Vue():
 
     # le splash (ce qui 'splash' à l'écran lors du démarrage)
     # sera le cadre visuel initial lors du lancement de l'application
-    def creer_cadre_splash(self, urlserveur, mon_nom, msg_initial) -> Frame:
+    def creer_cadre_splash(self, urlserveur, mon_nom, msg_initial):
         self.cadre_splash = Frame(self.cadre_app)
         # un canvas est utilisé pour 'dessiner' les widgets de cette fenêtre voir 'create_window' plus bas
         self.canevas_splash = Canvas(self.cadre_splash, width=600, height=480, bg="pink")
@@ -127,8 +127,8 @@ class Vue():
 
         self.cadrejeu.columnconfigure(0,weight=1)
         self.cadrejeu.rowconfigure(0,weight=1)
-        self.canevas.bind("<Button>",self.cliquecosmos)
-        self.canevas.tag_bind(ALL,"<Button>",self.cliquecosmos)
+        self.canevas.bind("<Button>",self.cliquer_cosmos)
+        self.canevas.tag_bind(ALL,"<Button>",self.cliquer_cosmos)
 
         # faire une multiselection
         self.canevas.bind("<Shift-Button-1>", self.debuter_multiselection)
@@ -159,9 +159,9 @@ class Vue():
 
         self.cadreinfochoix=Frame(self.cadreinfo,height=200,width=200,bg="grey30")
         self.btncreervaisseau=Button(self.cadreinfochoix,text="Vaisseau")
-        self.btncreervaisseau.bind("<Button>",self.creervaisseau)
+        self.btncreervaisseau.bind("<Button>",self.creer_vaisseau)
         self.btncreercargo=Button(self.cadreinfochoix,text="Cargo")
-        self.btncreercargo.bind("<Button>",self.creervaisseau)
+        self.btncreercargo.bind("<Button>",self.creer_vaisseau)
 
         self.btncreervaisseau.pack()
         self.btncreercargo.pack()
@@ -170,7 +170,7 @@ class Vue():
 
         self.scroll_liste_Y=Scrollbar(self.cadreinfoliste,orient=VERTICAL)
         self.info_liste=Listbox(self.cadreinfoliste,width=20,height=6,yscrollcommand = self.scroll_liste_Y.set)
-        self.info_liste.bind("<Button-3>",self.centrer_objet)
+        self.info_liste.bind("<Button-3>",self.centrer_liste_objet)
         self.info_liste.grid(column=0,row=0,sticky=W+E+N+S)
         self.scroll_liste_Y.grid(column=1,row=0,sticky=N+S)
 
@@ -181,7 +181,7 @@ class Vue():
 
         self.cadreminimap=Frame(self.cadreoutils,height=200,width=200,bg="black")
         self.canevas_minimap=Canvas(self.cadreminimap,width=self.taille_minimap,height=self.taille_minimap,bg="pink")
-        self.canevas_minimap.bind("<Button>",self.positionner_canevas)
+        self.canevas_minimap.bind("<Button>",self.positionner_minicanevas)
         self.canevas_minimap.pack()
         self.cadreminimap.pack(side=BOTTOM)
 
@@ -196,7 +196,7 @@ class Vue():
         url_serveur=self.urlsplash.get()
         self.parent.connecter_serveur(url_serveur)
 
-    def centrer_objet(self,evt):
+    def centrer_liste_objet(self,evt):
         info=self.info_liste.get(self.info_liste.curselection())
         print(info)
         liste_separee=info.split(";")
@@ -274,10 +274,10 @@ class Vue():
         self.labid.config(text=self.mon_nom)
         self.labid.config(fg=self.modele.joueurs[self.mon_nom].couleur)
 
-        self.afficherdecor(modele)
+        self.afficher_decor(modele)
 ####################################################################################################
 
-    def positionner_canevas(self,evt):
+    def positionner_minicanevas(self,evt):
         x=evt.x
         y=evt.y
 
@@ -292,7 +292,7 @@ class Vue():
         xl=self.canevas.winfo_width()
         yl=self.canevas.winfo_height()
 
-    def afficherdecor(self, mod):
+    def afficher_decor(self, mod):
         # on cree un arriere fond de petites etoieles NPC pour le look
         for i in range(len(mod.etoiles) * 50):
             x = random.randrange(int(mod.largeur))
@@ -349,7 +349,7 @@ class Vue():
     def lister_objet(self,obj,id):
         self.info_liste.insert(END,obj+"; "+id)
 
-    def creervaisseau(self,evt):
+    def creer_vaisseau(self,evt):
         type_vaisseau=evt.widget.cget("text")
         self.parent.creer_vaisseau(type_vaisseau)
         self.ma_selection=None
@@ -399,18 +399,18 @@ class Vue():
                                                  (j.x + tailleF), (j.y + tailleF), fill=i.couleur,
                                                  tags=(j.proprietaire, str(j.id), "Flotte",k,"artefact"))
 
-    def cliquecosmos(self,evt):
+    def cliquer_cosmos(self,evt):
         t=self.canevas.gettags(CURRENT)
         if t: # il y a des tags
             if t[0]==self.mon_nom: # et 
                 self.ma_selection=[self.mon_nom,t[1],t[2]]
                 if t[2] == "Etoile":
-                    self.montreetoileselection()
+                    self.montrer_etoile_selection()
                 elif t[2] == "Flotte":
-                    self.montreflotteselection()
+                    self.montrer_flotte_selection()
             elif "Etoile" in t and t[0]!=self.mon_nom:
                 if self.ma_selection:
-                    self.parent.ciblerflotte(self.ma_selection[1],t[1])
+                    self.parent.cibler_flotte(self.ma_selection[1],t[1])
                 self.ma_selection=None
                 self.canevas.delete("marqueur")
         else: # aucun tag => rien sous la souris - sinon au minimum il y aurait CURRENT
@@ -418,14 +418,11 @@ class Vue():
             self.ma_selection=None
             self.canevas.delete("marqueur")
             
-    def montreetoileselection(self):
+    def montrer_etoile_selection(self):
         self.cadreinfochoix.pack(fill=BOTH)
 
-    def montreflotteselection(self):
-        pass
-    
-    def afficherartefacts(self,joueurs):
-        pass #print("ARTEFACTS de ",self.mon_nom)
+    def montrer_flotte_selection(self):
+        print("À IMPLANTER - FLOTTE de ",self.mon_nom)
 
     # Methodes pour multiselect#########################################################
     def debuter_multiselection(self,evt):

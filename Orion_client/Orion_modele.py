@@ -182,6 +182,7 @@ class Modele():
         
     ##############################################################################
     def jouer_prochain_coup(self,cadre):
+        #  NE PAS TOUCHER LES LIGNES SUIVANTES  ################
         self.cadre_courant=cadre
         # insertion de la prochaine action demandée par le joueur
         if cadre in self.actions_a_faire:
@@ -192,14 +193,20 @@ class Modele():
                 alors self.joueurs[i[0]] -> trouve l'objet représentant le joueur de ce nom
                 """
             del self.actions_a_faire[cadre]
-        # demander aux objets qui peuvent agir de jouer leur prochain coup
+        # FIN DE L'INTERDICTION #################################
+
+        # demander aux objets de jouer leur prochain coup
         # aux joueurs en premier
         for i in self.joueurs:
             self.joueurs[i].jouer_prochain_coup()
-        #
-        # # puis a l'IA
-        # for i in self.ias:
-        #     i.jouer_prochain_coup()
+
+        # NOTE si le modele (qui représente l'univers !!! )
+        #      fait des actions - on les activera ici...
+        self.creer_bibittes_spatiales(12)
+        # EXEMPLE
+
+    def creer_bibittes_spatiales(self,nb_biittes=0):
+        pass
 
     #############################################################################
     # ATTENTION : NE PAS TOUCHER
