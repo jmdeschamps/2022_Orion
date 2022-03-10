@@ -87,7 +87,7 @@ class Joueur():
             v=Vaisseau(self,self.nom,self.etoilemere.x+10,self.etoilemere.y)
         self.flotte[type_vaisseau][v.id]=v
 
-        if self.nom==self.parent.parent.monnom:
+        if self.nom==self.parent.parent.mon_nom:
             self.parent.parent.lister_objet(type_vaisseau,v.id)
         return v
         
@@ -143,18 +143,18 @@ class IA(Joueur):
             self.cooldown=random.randrange(self.cooldownmax) + self.cooldownmax
         else:
             self.cooldown-=1
-
-class Modele():
-    def __init__(self,parent):
-        self.parent=parent
-        self.partie=None
+#
+# class Modele():
+#     def __init__(self,parent):
+#         self.parent=parent
+#         self.partie=None
 
 class Partie():
     def __init__(self,parent,joueurs):
         self.parent=parent
-        self.largeur=5000 #self.parent.vue.root.winfo_screenwidth()
-        self.hauteur=5000 #self.parent.vue.root.winfo_screenheight()
-        self.nb_etoiles=300#int((self.hauteur*self.largeur)/300000)
+        self.largeur=6000 #self.parent.vue.root.winfo_screenwidth()
+        self.hauteur=6000 #self.parent.vue.root.winfo_screenheight()
+        self.nb_etoiles=100 #int((self.hauteur*self.largeur)/300000)
         self.joueurs={}
         self.ias=[]
         self.actions_a_faire={}

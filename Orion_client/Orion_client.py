@@ -22,7 +22,7 @@ from Orion_vue import *
 
 class Controleur():
     def __init__(self):
-        self.monnom = self.generer_nom()  # nom de joueur, sert d'identifiant dans le jeu - ici, avec auto-generation
+        self.mon_nom = self.generer_nom()  # nom de joueur, sert d'identifiant dans le jeu - ici, avec auto-generation
         self.joueur_createur = 0  # 1 quand un joueur "Créer une partie", peut Demarrer la partie
         self.cadrejeu = 0  # compte les tours dans la boucle de jeu (bouclersurjeu)
         self.actionsrequises = []  # les actions envoyées au serveur
@@ -35,7 +35,7 @@ class Controleur():
         self.urlserveur = "http://127.0.0.1:8000"  # 127.0.0.1 pour tests,"http://votreidentifiant.pythonanywhere.com" pour web
         #self.urlserveur= "http://jmdeschamps.pythonanywhere.com"
         self.modele = None  # la variable contenant la partie, après initialiserpartie()
-        self.vue = Vue(self, self.urlserveur, self.monnom,
+        self.vue = Vue(self, self.urlserveur, self.mon_nom,
                        "Non connecté")  # la vue pour l'affichage et les controles du jeu
 
         self.vue.root.mainloop()  # la boucle des evenements (souris, click, clavier)
@@ -50,14 +50,14 @@ class Controleur():
             self.vue.root.after_cancel(self.prochainsplash)
             self.prochainsplash = None
         if nom:  # si c'est pas None c'est un nouveau nom
-            self.monnom = nom
+            self.mon_nom = nom
         # on avertit le serveur qu'on cree une partie
         url = self.urlserveur + "/creer_partie"
-        params = {"nom": self.monnom}
+        params = {"nom": self.mon_nom}
         reptext = self.appeler_serveur(url, params)
 
         self.joueur_createur = 1  # on est le createur
-        self.vue.root.title("je suis " + self.monnom)
+        self.vue.root.title("je suis " + self.mon_nom)
         # on passe au lobby pour attendre les autres joueurs
         self.vue.changer_cadre("lobby")
         self.boucler_sur_lobby()
@@ -69,20 +69,20 @@ class Controleur():
             self.vue.root.after_cancel(self.prochainsplash)
             self.prochainsplash = None
         if nom:
-            self.monnom = nom
+            self.mon_nom = nom
         # on s'inscrit sur le serveur
         url = self.urlserveur + "/inscrire_joueur"
-        params = {"nom": self.monnom}
+        params = {"nom": self.mon_nom}
         reptext = self.appeler_serveur(url, params)
 
-        self.vue.root.title("je suis " + self.monnom)
+        self.vue.root.title("je suis " + self.mon_nom)
         self.vue.changer_cadre("lobby")
         self.boucler_sur_lobby()
 
     # a partir du lobby, le createur avertit le serveur de changer l'etat pour courant
     def lancer_partie(self):
         url = self.urlserveur + "/lancer_partie"
-        params = {"nom": self.monnom}
+        params = {"nom": self.mon_nom}
         reptext = self.appeler_serveur(url, params)
 
     # Apres que le createur de la partie ait lancer_partie
@@ -107,7 +107,7 @@ class Controleur():
     # boucle de communication intiale avec le serveur pour creer ou s'inscrire a la partie
     def boucler_sur_splash(self):
         url = self.urlserveur + "/tester_jeu"
-        params = {"nom": self.monnom}
+        params = {"nom": self.mon_nom}
         mondict = self.appeler_serveur(url, params)
         if mondict:
             self.vue.update_splash(mondict[0])
@@ -116,7 +116,7 @@ class Controleur():
     # on boucle sur le lobby en attendant le demarrage
     def boucler_sur_lobby(self):
         url = self.urlserveur + "/boucler_sur_lobby"
-        params = {"nom": self.monnom}
+        params = {"nom": self.mon_nom}
         mondict = self.appeler_serveur(url, params)
 
         if "courante" in mondict[0]:  # courante, la partie doit etre initialiser
@@ -137,7 +137,7 @@ class Controleur():
                 actions = None
             self.actionsrequises = []
             url = self.urlserveur + "/boucler_sur_jeu"
-            params = {"nom": self.monnom,
+            params = {"nom": self.mon_nom,
                       "cadrejeu": self.cadrejeu,
                       "actionsrequises": actions}
             try:  # permet de récupérer des time-out, mais aussi des commandes de pause du serveur pour retard autre joueur
@@ -200,11 +200,11 @@ class Controleur():
     ############            OUTILS           ###################
     # generateur de nouveau nom, peut y avoir collision
     def generer_nom(self):
-        monnom = "JAJA_" + str(random.randrange(100, 1000))
-        return monnom
+        mon_nom = "JAJA_" + str(random.randrange(100, 1000))
+        return mon_nom
 
     def abandonner(self):
-        action = [self.monnom, "abandonner", [self.monnom + ": J'ABANDONNE !"]]
+        action = [self.mon_nom, "abandonner", [self.mon_nom + ": J'ABANDONNE !"]]
         self.actionsrequises = action
         self.root.after(500, self.root.destroy)
 
@@ -212,10 +212,10 @@ class Controleur():
     ### Placez vos fonctions
 
     def creer_vaisseau(self,type_vaisseau):
-        self.actionsrequises.append([self.monnom, "creervaisseau", [type_vaisseau]])
+        self.actionsrequises.append([self.mon_nom, "creervaisseau", [type_vaisseau]])
 
     def ciblerflotte(self, idorigine, iddestination):
-        self.actionsrequises.append([self.monnom, "ciblerflotte", [idorigine, iddestination]])
+        self.actionsrequises.append([self.mon_nom, "ciblerflotte", [idorigine, iddestination]])
 
     def afficher_etoile(self,joueur,cible):
         self.vue.afficher_etoile(joueur,cible)
