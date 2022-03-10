@@ -102,8 +102,6 @@ class Joueur():
             for j in self.parent.etoiles:
                 if j.id== iddesti:
                     ori.acquerir_cible(j)
-                    #i.cible=j
-                    print("GOT TARGET")
                     return
         
         
@@ -125,7 +123,6 @@ class IA(Joueur):
         Joueur.__init__(self, parent, nom, etoilemere, couleur)  
         self.cooldownmax=200
         self.cooldown=20
-        print("IA",self.etoilemere.x,self.etoilemere.y)
         
     def jouer_prochain_coup(self):
         # for i in self.flotte:
@@ -143,22 +140,17 @@ class IA(Joueur):
             self.cooldown=random.randrange(self.cooldownmax) + self.cooldownmax
         else:
             self.cooldown-=1
-#
-# class Modele():
-#     def __init__(self,parent):
-#         self.parent=parent
-#         self.partie=None
 
-class Partie():
+class Modele():
     def __init__(self,parent,joueurs):
         self.parent=parent
-        self.largeur=6000 #self.parent.vue.root.winfo_screenwidth()
-        self.hauteur=6000 #self.parent.vue.root.winfo_screenheight()
-        self.nb_etoiles=100 #int((self.hauteur*self.largeur)/300000)
+        self.largeur=6000
+        self.hauteur=6000
+        self.nb_etoiles=100
         self.joueurs={}
-        self.ias=[]
         self.actions_a_faire={}
         self.etoiles=[]
+        self.objets_spatiaux={}
         self.cadre_courant=None
         self.creeretoiles(joueurs,1)
         
@@ -187,7 +179,6 @@ class Partie():
                   "SeaGreen1","turquoise1","firebrick1"]
         for i in range(ias):
             self.joueurs["IA_"+str(i)]=IA(self,"IA_"+str(i),etoile_occupee.pop(0),couleursia.pop(0))
-            print("IA_"+str(i))
         
     ##############################################################################
     def jouer_prochain_coup(self,cadre):

@@ -1,13 +1,11 @@
 # -*- coding: utf-8 -*-
 from tkinter import *
-from tkinter import ttk
 from tkinter.simpledialog import *
 from tkinter.messagebox import *
 from helper import Helper as hlp
 import math
 
 import random
-import os,os.path,sys
 
 
 class Vue():
@@ -154,13 +152,12 @@ class Vue():
         self.cadreinfo.pack(fill=BOTH)
 
         self.cadreinfogen=Frame(self.cadreinfo,width=200,height=200,bg="grey50")
-        self.cadreinfogen.pack()
+        self.cadreinfogen.pack(fill=BOTH)
         self.labid=Label(self.cadreinfogen,text="Inconnu")
         self.labid.bind("<Button>",self.centrer_planemetemere)
         self.labid.pack()
 
         self.cadreinfochoix=Frame(self.cadreinfo,height=200,width=200,bg="grey30")
-        self.cadreinfochoix.pack(expand=1,fill=Y)
         self.btncreervaisseau=Button(self.cadreinfochoix,text="Vaisseau")
         self.btncreervaisseau.bind("<Button>",self.creervaisseau)
         self.btncreercargo=Button(self.cadreinfochoix,text="Cargo")
@@ -169,12 +166,11 @@ class Vue():
         self.btncreervaisseau.pack()
         self.btncreercargo.pack()
 
-        self.lbselectecible=Label(self.cadreinfo,text="Choisir cible",bg="orange")
         self.cadreinfoliste=Frame(self.cadreinfo)
 
         self.scroll_liste_Y=Scrollbar(self.cadreinfoliste,orient=VERTICAL)
         self.info_liste=Listbox(self.cadreinfoliste,width=20,height=6,yscrollcommand = self.scroll_liste_Y.set)
-        self.info_liste.bind("<Button-3>",self.montrer_objet)
+        self.info_liste.bind("<Button-3>",self.centrer_objet)
         self.info_liste.grid(column=0,row=0,sticky=W+E+N+S)
         self.scroll_liste_Y.grid(column=1,row=0,sticky=N+S)
 
@@ -200,13 +196,13 @@ class Vue():
         url_serveur=self.urlsplash.get()
         self.parent.connecter_serveur(url_serveur)
 
-    def montrer_objet(self,evt):
+    def centrer_objet(self,evt):
         info=self.info_liste.get(self.info_liste.curselection())
         print(info)
         liste_separee=info.split(";")
         type_vaisseau=liste_separee[0]
         id=liste_separee[1][1:]
-        obj=self.modele.joueurs[self.nom].flotte[type_vaisseau][id]
+        obj=self.modele.joueurs[self.mon_nom].flotte[type_vaisseau][id]
         self.centrer_objet(obj)
 
     def calc_objets(self,evt):
@@ -271,12 +267,12 @@ class Vue():
         self.parent.lancer_partie()
 
     def initialiser_avec_modele(self, modele):
-        self.nom = self.parent.mon_nom
+        self.mon_nom = self.parent.mon_nom
         self.modele = modele
         self.canevas.config(scrollregion=(0, 0, modele.largeur, modele.hauteur))
 
-        self.labid.config(text=self.nom)
-        self.labid.config(fg=self.modele.joueurs[self.nom].couleur)
+        self.labid.config(text=self.mon_nom)
+        self.labid.config(fg=self.modele.joueurs[self.mon_nom].couleur)
 
         self.afficherdecor(modele)
 ####################################################################################################
@@ -307,7 +303,6 @@ class Vue():
         # affichage des etoiles
         for i in mod.etoiles:
             t = i.taille * self.zoom
-            col = random.choice(["LightYellow", "azure1", "pink"])
             self.canevas.create_oval(i.x - t, i.y - t, i.x + t, i.y + t,
                                      fill="grey80", outline=col,
                                      tags=(i.proprietaire, str(i.id), "Etoile",))
@@ -326,7 +321,7 @@ class Vue():
                                          tags=(j.proprietaire, str(j.id), "Etoile"))
 
     def centrer_planemetemere(self,evt):
-        self.centrer_objet(self.modele.joueurs[self.nom].etoilemere)
+        self.centrer_objet(self.modele.joueurs[self.mon_nom].etoilemere)
 
     def centrer_objet(self,objet):
         # permet de defiler l'écran jusqu'à cet objet
@@ -374,7 +369,7 @@ class Vue():
                         y = i.y
                         t = 10 * self.zoom
                         self.canevas.create_oval(x - t, y - t, x + t, y + t,
-                                                 dash=(2, 2), outline=mod.joueurs[self.nom].couleur,
+                                                 dash=(2, 2), outline=mod.joueurs[self.mon_nom].couleur,
                                                  tags=("multiselection", "marqueur"))
             elif self.ma_selection[2] == "Flotte":
                 for j in joueur.flotte:
@@ -385,7 +380,7 @@ class Vue():
                             y = i.y
                             t = 10 * self.zoom
                             self.canevas.create_rectangle(x - t, y - t, x + t, y + t,
-                                                          dash=(2, 2), outline=mod.joueurs[self.nom].couleur,
+                                                          dash=(2, 2), outline=mod.joueurs[self.mon_nom].couleur,
                                                           tags=("multiselection", "marqueur"))
         # afficher asset des joueurs
         for i in mod.joueurs.keys():
@@ -404,72 +399,33 @@ class Vue():
                                                  (j.x + tailleF), (j.y + tailleF), fill=i.couleur,
                                                  tags=(j.proprietaire, str(j.id), "Flotte",k,"artefact"))
 
-        for i in mod.ias:
-            for j in i.flotte["Vaisseau"]:
-                j=i.flotte["Vaisseau"][j]
-
-                x1, y1 = hlp.getAngledPoint(j.angle_cible, j.taille / 2, j.x, j.y)
-
-                x2, y2 = hlp.getAngledPoint(j.angle_cible - math.pi, j.taille / 2, j.x, j.y)
-                self.canevas.create_line(x1, y1, x2, y2, width=3, fill=i.couleur,
-                                         tags=(j.proprietaire,  str(j.id), "Flotte","artefact"))
-
-
     def cliquecosmos(self,evt):
         t=self.canevas.gettags(CURRENT)
-        if t:
-            if t[0]==self.nom:
-                self.ma_selection=[self.nom,t[1],t[2]]  #self.canevas.find_withtag(CURRENT)#[0]
-                print(self.ma_selection)
+        if t: # il y a des tags
+            if t[0]==self.mon_nom: # et 
+                self.ma_selection=[self.mon_nom,t[1],t[2]]
                 if t[2] == "Etoile":
                     self.montreetoileselection()
                 elif t[2] == "Flotte":
                     self.montreflotteselection()
-            elif "Etoile" in t and t[0]!=self.nom:
+            elif "Etoile" in t and t[0]!=self.mon_nom:
                 if self.ma_selection:
                     self.parent.ciblerflotte(self.ma_selection[1],t[1])
                 self.ma_selection=None
-                self.lbselectecible.pack_forget()
                 self.canevas.delete("marqueur")
-        else:
+        else: # aucun tag => rien sous la souris - sinon au minimum il y aurait CURRENT
             print("Region inconnue")
             self.ma_selection=None
-            self.lbselectecible.pack_forget()
             self.canevas.delete("marqueur")
             
     def montreetoileselection(self):
-        self.cadreinfochoix.pack()
+        self.cadreinfochoix.pack(fill=BOTH)
 
     def montreflotteselection(self):
-        self.lbselectecible.pack()
+        pass
     
     def afficherartefacts(self,joueurs):
-        pass #print("ARTEFACTS de ",self.nom)
-
-        ##### ACTIONS DU JOUEUR #######################################################################
-
-    # def annuler_action(self, evt):
-    #     mestags = self.canevas.gettags(CURRENT)
-    #     if not mestags:
-    #         self.canevasaction.delete(self.action.widgetsactifs)
-    #         if self.action.btnactif:
-    #             self.action.btnactif.config(bg="SystemButtonFace")
-    #         self.action = Action(self)
-    #
-    # def ajouter_selection(self, evt):
-    #     mestags = self.canevas.gettags(CURRENT)
-    #     if self.parent.mon_nom == mestags[0]:
-    #         print("Fait 'ajouter_selection'")
-    #         pass
-
-    # def indiquer_position(self,evt):
-    #     tag=self.canevas.gettags(CURRENT)
-    #     if not tag and self.objets_selectionnes:
-    #         x,y=(self.canevas.canvasx(evt.x),self.canevas.canvasy(evt.y))
-    #         self.action.position=[x,y]
-    #         print("Fait action: 'indiquer_position'")
-    #         #self.action.deplacer()
-
+        pass #print("ARTEFACTS de ",self.mon_nom)
 
     # Methodes pour multiselect#########################################################
     def debuter_multiselection(self,evt):
@@ -498,6 +454,6 @@ class Vue():
                     self.objets_selectionnes.append(self.canevas.gettags(i)[2])
 
             self.canevas.delete("selecteur")
-        print("SELECTEUR",)
+
     ### FIN du multiselect
 

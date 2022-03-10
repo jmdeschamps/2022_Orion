@@ -97,7 +97,7 @@ class Controleur():
         for i in self.joueurs:
             listejoueurs.append(i[0])
 
-        self.modele = Partie(self,listejoueurs)  # on cree une partie pour les joueurs listes, qu'on conserve comme modele
+        self.modele = Modele(self,listejoueurs)  # on cree une partie pour les joueurs listes, qu'on conserve comme modele
         self.vue.initialiser_avec_modele(self.modele)  # on fournit le modele et mets la vue à jour
         self.vue.changer_cadre("partie")  # on change le cadre la fenetre pour passer dans l'interface de jeu
 
