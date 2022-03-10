@@ -4,7 +4,24 @@ import random
 import ast
 from Id import *
 from helper import Helper as hlp
-        
+
+class Trou_de_vers():
+    def __init__(self,x1,y1,x2,y2):
+        self.id=get_prochain_id()
+        self.x1=x1
+        self.y1=y1
+        self.x2=x2
+        self.y2=y2
+        self.distance_porte=20
+        self.pulsemax=24
+        self.pulse=random.randrange(self.pulsemax)
+
+    def jouer_prochaine_tour(self):
+        self.pulse+=3
+        if self.pulse >= self.pulsemax:
+            self.pulse=0
+
+
 class Etoile():
     def __init__(self,x,y):
         self.id=get_prochain_id()
@@ -150,9 +167,19 @@ class Modele():
         self.joueurs={}
         self.actions_a_faire={}
         self.etoiles=[]
-        self.objets_spatiaux={}
+        self.trou_de_vers=[]
         self.cadre_courant=None
         self.creeretoiles(joueurs,1)
+        self.creer_troudevers(3000)
+
+    def creer_troudevers(self,n):
+        bordure=10
+        for i in range(n):
+            x1=random.randrange(self.largeur-(2*bordure))+bordure
+            y1=random.randrange(self.hauteur-(2*bordure))+bordure
+            x2=random.randrange(self.largeur-(2*bordure))+bordure
+            y2=random.randrange(self.hauteur-(2*bordure))+bordure
+            self.trou_de_vers.append(Trou_de_vers(x1,y1,x2,y2))
         
     def creeretoiles(self,joueurs,ias=0):
         bordure=10
@@ -202,8 +229,8 @@ class Modele():
 
         # NOTE si le modele (qui représente l'univers !!! )
         #      fait des actions - on les activera ici...
-        self.creer_bibittes_spatiales(12)
-        # EXEMPLE
+        for i in self.trou_de_vers:
+            i.jouer_prochaine_tour()
 
     def creer_bibittes_spatiales(self,nb_biittes=0):
         pass

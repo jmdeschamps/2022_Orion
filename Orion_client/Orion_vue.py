@@ -359,6 +359,7 @@ class Vue():
     def afficher_jeu(self):
         mod = self.modele
         self.canevas.delete("artefact")
+        self.canevas.delete("objet_spatial")
 
         if self.ma_selection != None:
             joueur = mod.joueurs[self.ma_selection[0]]
@@ -398,6 +399,16 @@ class Vue():
                         self.canevas.create_oval((j.x - tailleF), (j.y - tailleF),
                                                  (j.x + tailleF), (j.y + tailleF), fill=i.couleur,
                                                  tags=(j.proprietaire, str(j.id), "Flotte",k,"artefact"))
+        for i in self.modele.trou_de_vers:
+
+            self.canevas.create_oval(i.x1-i.pulse,i.y1-i.pulse,
+                                     i.x1+i.pulse,i.y1+i.pulse,outline="yellow",width=2,
+                                     tags=("",i.id,"trou_de_vers","objet_spatial"))
+
+            self.canevas.create_oval(i.x2-i.pulse,i.y2-i.pulse,
+                                     i.x2+i.pulse,i.y2+i.pulse,outline="red",width=2,
+                                     tags=("",i.id,"trou_de_vers","objet_spatial"))
+
 
     def cliquer_cosmos(self,evt):
         t=self.canevas.gettags(CURRENT)
