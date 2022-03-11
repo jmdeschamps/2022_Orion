@@ -399,15 +399,16 @@ class Vue():
                         self.canevas.create_oval((j.x - tailleF), (j.y - tailleF),
                                                  (j.x + tailleF), (j.y + tailleF), fill=i.couleur,
                                                  tags=(j.proprietaire, str(j.id), "Flotte",k,"artefact"))
-        for i in self.modele.trou_de_vers:
+        for t in self.modele.trou_de_vers:
+            i=t.porte_a
+            for i in [t.porte_a,t.porte_b]:
+                self.canevas.create_oval(i.x-i.pulse,i.y-i.pulse,
+                                         i.x+i.pulse,i.y+i.pulse,outline=i.couleur,width=2,fill="grey15",
+                                         tags=("",i.id,"Porte_de_ver","objet_spatial"))
 
-            self.canevas.create_oval(i.x1-i.pulse,i.y1-i.pulse,
-                                     i.x1+i.pulse,i.y1+i.pulse,outline="yellow",width=2,
-                                     tags=("",i.id,"trou_de_vers","objet_spatial"))
-
-            self.canevas.create_oval(i.x2-i.pulse,i.y2-i.pulse,
-                                     i.x2+i.pulse,i.y2+i.pulse,outline="red",width=2,
-                                     tags=("",i.id,"trou_de_vers","objet_spatial"))
+                self.canevas.create_oval(i.x-i.pulse,i.y-i.pulse,
+                                         i.x+i.pulse,i.y+i.pulse,outline=i.couleur,width=2,fill="grey15",
+                                         tags=("",i.id,"Porte_de_ver","objet_spatial"))
 
 
     def cliquer_cosmos(self,evt):
@@ -419,9 +420,9 @@ class Vue():
                     self.montrer_etoile_selection()
                 elif t[2] == "Flotte":
                     self.montrer_flotte_selection()
-            elif "Etoile" in t and t[0]!=self.mon_nom:
+            elif ("Etoile" in t or "Porte_de_ver" in t ) and t[0]!=self.mon_nom:
                 if self.ma_selection:
-                    self.parent.cibler_flotte(self.ma_selection[1],t[1])
+                    self.parent.cibler_flotte(self.ma_selection[1],t[1],t[2])
                 self.ma_selection=None
                 self.canevas.delete("marqueur")
         else: # aucun tag => rien sous la souris - sinon au minimum il y aurait CURRENT

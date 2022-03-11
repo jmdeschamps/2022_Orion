@@ -5,21 +5,37 @@ import ast
 from Id import *
 from helper import Helper as hlp
 
+class Porte_de_vers():
+    def __init__(self,parent,x,y,couleur):
+        self.parent=parent
+        self.id=get_prochain_id()
+        self.x=x
+        self.y=y
+        self.pulsemax=20
+        self.pulse=random.randrange(self.pulsemax)
+        self.couleur=couleur
+
+    def jouer_prochain_coup(self):
+        self.pulse+=1
+        if self.pulse >= self.pulsemax:
+            self.pulse=0
+
 class Trou_de_vers():
     def __init__(self,x1,y1,x2,y2):
         self.id=get_prochain_id()
-        self.x1=x1
-        self.y1=y1
-        self.x2=x2
-        self.y2=y2
+        self.porte_a=Porte_de_vers(self,x1,y1,"red")
+        self.porte_b=Porte_de_vers(self,x2,y2,"orange")
         self.distance_porte=20
-        self.pulsemax=24
-        self.pulse=random.randrange(self.pulsemax)
+        # self.pulsemax=20
+        # self.pulse=random.randrange(self.pulsemax)
+        self.liste_transit=[]
 
-    def jouer_prochaine_tour(self):
-        self.pulse+=3
-        if self.pulse >= self.pulsemax:
-            self.pulse=0
+    def jouer_prochain_coup(self):
+        self.porte_a.jouer_prochain_coup()
+        self.porte_b.jouer_prochain_coup()
+        # self.pulse+=1
+        # if self.pulse >= self.pulsemax:
+        #     self.pulse=0
 
 
 class Etoile():
@@ -45,6 +61,7 @@ class Vaisseau():
         self.taille=5
         self.vitesse=2
         self.cible=0
+        self.type_cible=None
         self.angle_cible=0
 
     def jouer_prochain_coup(self,trouver_nouveau=0):
@@ -52,9 +69,10 @@ class Vaisseau():
             return self.avancer()
         elif trouver_nouveau:
             cible = random.choice(self.parent.parent.etoiles)
-            self.acquerir_cible(cible)
+            self.acquerir_cible(cible,"Etoile")
 
-    def acquerir_cible(self,cible):
+    def acquerir_cible(self,cible,type_cible):
+        self.type_cible=type_cible
         self.cible=cible
         self.angle_cible = hlp.calcAngle(self.x, self.y, self.cible.x, self.cible.y)
 
@@ -64,6 +82,7 @@ class Vaisseau():
             y=self.cible.y
             self.x,self.y=hlp.getAngledPoint(self.angle_cible,self.vitesse,self.x,self.y)
             if hlp.calcDistance(self.x,self.y,x,y) <=self.vitesse:
+                if self.cible==type(__isinstance)
                 self.parent.log.append(["Arrive:",self.parent.parent.cadre_courant,self.id,self.cible.id,self.cible.proprietaire])
                 if not self.cible.proprietaire:
                     self.cible.proprietaire=self.proprietaire
@@ -109,17 +128,28 @@ class Joueur():
         return v
         
     def ciblerflotte(self,ids):
-        idori,iddesti=ids
+        idori,iddesti,type_cible=ids
         ori=None
         for i in self.flotte.keys():
             if idori in self.flotte[i]:
                 ori=self.flotte[i][idori]
 
         if ori:
-            for j in self.parent.etoiles:
-                if j.id== iddesti:
-                    ori.acquerir_cible(j)
-                    return
+            if type_cible=="Etoile":
+                for j in self.parent.etoiles:
+                    if j.id== iddesti:
+                        ori.acquerir_cible(j,type_cible)
+                        return
+            elif type_cible=="Porte_de_ver":
+                cible=None
+                for j in self.parent.trou_de_vers:
+                    if j.porte_a.id== iddesti:
+                        cible=j.porte_a
+                    elif j.porte_b.id==iddesti:
+                        cible=j.porte_b
+                    if cible:
+                        ori.acquerir_cible(cible,type_cible)
+                        return
         
         
     def jouer_prochain_coup(self):
@@ -153,7 +183,7 @@ class IA(Joueur):
         if self.cooldown==0:
             v=self.creervaisseau(["Vaisseau"])
             cible = random.choice(self.parent.etoiles)
-            v.acquerir_cible(cible)
+            v.acquerir_cible(cible,"Etoile")
             self.cooldown=random.randrange(self.cooldownmax) + self.cooldownmax
         else:
             self.cooldown-=1
@@ -161,16 +191,16 @@ class IA(Joueur):
 class Modele():
     def __init__(self,parent,joueurs):
         self.parent=parent
-        self.largeur=6000
-        self.hauteur=6000
-        self.nb_etoiles=100
+        self.largeur=2000
+        self.hauteur=2000
+        self.nb_etoiles=20
         self.joueurs={}
         self.actions_a_faire={}
         self.etoiles=[]
         self.trou_de_vers=[]
         self.cadre_courant=None
         self.creeretoiles(joueurs,1)
-        self.creer_troudevers(3000)
+        self.creer_troudevers(1)
 
     def creer_troudevers(self,n):
         bordure=10
@@ -230,7 +260,7 @@ class Modele():
         # NOTE si le modele (qui représente l'univers !!! )
         #      fait des actions - on les activera ici...
         for i in self.trou_de_vers:
-            i.jouer_prochaine_tour()
+            i.jouer_prochain_coup()
 
     def creer_bibittes_spatiales(self,nb_biittes=0):
         pass
