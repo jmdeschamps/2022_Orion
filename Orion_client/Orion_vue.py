@@ -16,7 +16,7 @@ class Vue():
         self.mon_nom=mon_nom
         # attributs
         self.taille_minimap=240
-        self.zoom=1
+        self.zoom=1.5
         self.ma_selection=None
         self.cadre_actif=None
         # cadre principal de l'application
@@ -395,10 +395,12 @@ class Vue():
                         self.canevas.create_rectangle((j.x - tailleF), (j.y - tailleF),
                                                       (j.x + tailleF), (j.y + tailleF), fill=i.couleur,
                                                       tags=(j.proprietaire, str(j.id), "Flotte",k,"artefact"))
-                    else:
-                        self.canevas.create_oval((j.x - tailleF), (j.y - tailleF),
-                                                 (j.x + tailleF), (j.y + tailleF), fill=i.couleur,
-                                                 tags=(j.proprietaire, str(j.id), "Flotte",k,"artefact"))
+                    elif k=="Cargo":
+                        #self.dessiner_cargo(j,tailleF,i,k)
+                        self.dessiner_cargo(j,tailleF,i,k)
+                        # self.canevas.create_oval((j.x - tailleF), (j.y - tailleF),
+                        #                          (j.x + tailleF), (j.y + tailleF), fill=i.couleur,
+                        #                          tags=(j.proprietaire, str(j.id), "Flotte",k,"artefact"))
         for t in self.modele.trou_de_vers:
             i=t.porte_a
             for i in [t.porte_a,t.porte_b]:
@@ -410,7 +412,22 @@ class Vue():
                                          i.x+i.pulse,i.y+i.pulse,outline=i.couleur,width=2,fill="grey15",
                                          tags=("",i.id,"Porte_de_ver","objet_spatial"))
 
+    def dessiner_cargo(self,obj,tailleF,joueur,type_obj):
+        t=obj.taille*self.zoom
+        a=obj.ang
+        x,y=hlp.getAngledPoint(obj.angle_cible,int(t/4*3),obj.x,obj.y)
+        dt=t/2
+        self.canevas.create_oval((obj.x - tailleF), (obj.y - tailleF),
+                                 (obj.x + tailleF), (obj.y + tailleF), fill=joueur.couleur,
+                                 tags=(obj.proprietaire, str(obj.id), "Flotte", type_obj, "artefact"))
+        self.canevas.create_oval((x - dt), (y - dt),
+                                 (x + dt), (y + dt), fill="yellow",
+                                 tags=(obj.proprietaire, str(obj.id), "Flotte", type_obj, "artefact"))
 
+    def dessiner_cargo1(self,j,tailleF,i,k):
+        self.canevas.create_oval((j.x - tailleF), (j.y - tailleF),
+                                 (j.x + tailleF), (j.y + tailleF), fill=i.couleur,
+                                 tags=(j.proprietaire, str(j.id), "Flotte", k, "artefact"))
     def cliquer_cosmos(self,evt):
         t=self.canevas.gettags(CURRENT)
         if t: # il y a des tags

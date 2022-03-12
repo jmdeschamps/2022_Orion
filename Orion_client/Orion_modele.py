@@ -6,12 +6,12 @@ from Id import *
 from helper import Helper as hlp
 
 class Porte_de_vers():
-    def __init__(self,parent,x,y,couleur):
+    def __init__(self,parent,x,y,couleur,taille):
         self.parent=parent
         self.id=get_prochain_id()
         self.x=x
         self.y=y
-        self.pulsemax=20
+        self.pulsemax=taille
         self.pulse=random.randrange(self.pulsemax)
         self.couleur=couleur
 
@@ -23,9 +23,9 @@ class Porte_de_vers():
 class Trou_de_vers():
     def __init__(self,x1,y1,x2,y2):
         self.id=get_prochain_id()
-        self.porte_a=Porte_de_vers(self,x1,y1,"red")
-        self.porte_b=Porte_de_vers(self,x2,y2,"orange")
-        self.distance_porte=20
+        taille=random.randrange(6,20)
+        self.porte_a=Porte_de_vers(self,x1,y1,"red",taille)
+        self.porte_b=Porte_de_vers(self,x2,y2,"orange",taille)
         # self.pulsemax=20
         # self.pulse=random.randrange(self.pulsemax)
         self.liste_transit=[]
@@ -63,6 +63,8 @@ class Vaisseau():
         self.cible=0
         self.type_cible=None
         self.angle_cible=0
+        self.arriver={"Etoile":self.arriver_etoile,
+                      "Porte_de_vers":self.arriver_porte}
 
     def jouer_prochain_coup(self,trouver_nouveau=0):
         if self.cible!=0:
@@ -82,13 +84,30 @@ class Vaisseau():
             y=self.cible.y
             self.x,self.y=hlp.getAngledPoint(self.angle_cible,self.vitesse,self.x,self.y)
             if hlp.calcDistance(self.x,self.y,x,y) <=self.vitesse:
-                if self.cible==type(__isinstance)
-                self.parent.log.append(["Arrive:",self.parent.parent.cadre_courant,self.id,self.cible.id,self.cible.proprietaire])
-                if not self.cible.proprietaire:
-                    self.cible.proprietaire=self.proprietaire
-                    cible=self.cible
-                    self.cible=0
-                    return ["rendu",cible]
+                type_obj=type(self.cible).__name__
+                rep=self.arriver[type_obj]()
+                return rep
+
+    def arriver_etoile(self):
+        self.parent.log.append(["Arrive:",self.parent.parent.cadre_courant,"Etoile",self.id,self.cible.id,self.cible.proprietaire])
+        if not self.cible.proprietaire:
+            self.cible.proprietaire=self.proprietaire
+        cible=self.cible
+        self.cible=0
+        return ["Etoile",cible]
+
+    def arriver_porte(self):
+        self.parent.log.append(["Arrive:", self.parent.parent.cadre_courant,"Porte", self.id, self.cible.id,])
+        cible = self.cible
+        trou=cible.parent
+        if cible==trou.porte_a:
+            self.x=trou.porte_b.x+random.randrange(6)+2
+            self.y=trou.porte_b.y
+        elif cible==trou.porte_b:
+            self.x=trou.porte_a.x-random.randrange(6)+2
+            self.y=trou.porte_a.y
+        self.cible = 0
+        return ["Porte_de_ver", cible]
 
 class Cargo(Vaisseau):
     def __init__(self,parent,nom,x,y):
@@ -161,8 +180,14 @@ class Joueur():
                 j=self.flotte[i][j]
                 rep=j.jouer_prochain_coup(chercher_nouveau)
                 if rep:
-                    self.etoilescontrolees.append(rep[1])
-                    self.parent.parent.afficher_etoile(self.nom,rep[1])
+                    if rep[0]=="Etoile":
+                        # NOTE  est-ce qu'on doit retirer l'etoile de la liste du modele
+                        #       quand on l'attribue aux etoilescontrolees
+                        #       et que ce passe-t-il si l'etoile a un proprietaire ???
+                        self.etoilescontrolees.append(rep[1])
+                        self.parent.parent.afficher_etoile(self.nom,rep[1])
+                    elif rep[0]=="Porte_de_ver":
+                        pass
 
 # IA- nouvelle classe de joueur
 class IA(Joueur):
@@ -191,16 +216,16 @@ class IA(Joueur):
 class Modele():
     def __init__(self,parent,joueurs):
         self.parent=parent
-        self.largeur=2000
-        self.hauteur=2000
-        self.nb_etoiles=20
+        self.largeur=5000
+        self.hauteur=5000
+        self.nb_etoiles=80
         self.joueurs={}
         self.actions_a_faire={}
         self.etoiles=[]
         self.trou_de_vers=[]
         self.cadre_courant=None
         self.creeretoiles(joueurs,1)
-        self.creer_troudevers(1)
+        self.creer_troudevers(5)
 
     def creer_troudevers(self,n):
         bordure=10
