@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+##  version 2022 14 mars - jmd
 
 from flask import Flask,request,json
 from werkzeug.wrappers import Response

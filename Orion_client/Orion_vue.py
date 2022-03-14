@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+##  version 2022 14 mars - jmd
+
 from tkinter import *
 from tkinter.simpledialog import *
 from tkinter.messagebox import *
@@ -16,7 +18,7 @@ class Vue():
         self.mon_nom=mon_nom
         # attributs
         self.taille_minimap=240
-        self.zoom=1.5
+        self.zoom=2
         self.ma_selection=None
         self.cadre_actif=None
         # cadre principal de l'application
@@ -156,6 +158,9 @@ class Vue():
         self.labid=Label(self.cadreinfogen,text="Inconnu")
         self.labid.bind("<Button>",self.centrer_planemetemere)
         self.labid.pack()
+        self.btnmini=Button(self.cadreinfogen,text="MINI")
+        self.btnmini.bind("<Button>",self.afficher_mini)
+        self.btnmini.pack()
 
         self.cadreinfochoix=Frame(self.cadreinfo,height=200,width=200,bg="grey30")
         self.btncreervaisseau=Button(self.cadreinfochoix,text="Vaisseau")
@@ -319,6 +324,24 @@ class Vue():
                 self.canevas_minimap.create_rectangle(minix, miniy, minix + 3, miniy + 3,
                                          fill=mod.joueurs[i].couleur,
                                          tags=(j.proprietaire, str(j.id), "Etoile"))
+
+    def afficher_mini(self,evt): #univers(self, mod):
+        self.canevas_minimap.delete("mini")
+        for j in self.modele.etoiles:
+                minix=j.x/self.modele.largeur*self.taille_minimap
+                miniy=j.y/self.modele.hauteur*self.taille_minimap
+                self.canevas_minimap.create_rectangle(minix, miniy, minix + 0, miniy + 0,
+                                         fill="black",
+                                         tags=("mini", "Etoile"))
+        # # affichage des etoiles possedees par les joueurs
+        # for i in mod.joueurs.keys():
+        #     for j in mod.joueurs[i].etoilescontrolees:
+        #         t = j.taille * self.zoom
+        #         self.canevas.create_oval(j.x - t, j.y - t, j.x + t, j.y + t,
+        #                                  fill=mod.joueurs[i].couleur,
+        #                                  tags=(j.proprietaire, str(j.id),  "Etoile"))
+
+
 
     def centrer_planemetemere(self,evt):
         self.centrer_objet(self.modele.joueurs[self.mon_nom].etoilemere)

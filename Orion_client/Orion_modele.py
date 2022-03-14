@@ -1,4 +1,6 @@
- # -*- coding: utf-8 -*-   
+ # -*- coding: utf-8 -*-
+##  version 2022 14 mars - jmd
+
 import random
 
 import ast
@@ -26,28 +28,23 @@ class Trou_de_vers():
         taille=random.randrange(6,20)
         self.porte_a=Porte_de_vers(self,x1,y1,"red",taille)
         self.porte_b=Porte_de_vers(self,x2,y2,"orange",taille)
-        # self.pulsemax=20
-        # self.pulse=random.randrange(self.pulsemax)
-        self.liste_transit=[]
+        self.liste_transit=[] # pour mettre les vaisseaux qui ne sont plus dans l'espace mais maintenant l'hyper-espace
 
     def jouer_prochain_coup(self):
         self.porte_a.jouer_prochain_coup()
         self.porte_b.jouer_prochain_coup()
-        # self.pulse+=1
-        # if self.pulse >= self.pulsemax:
-        #     self.pulse=0
-
 
 class Etoile():
-    def __init__(self,x,y):
+    def __init__(self,parent,x,y):
         self.id=get_prochain_id()
+        self.parent=parent
         self.proprietaire=""
         self.x=x
         self.y=y
         self.taille=random.randrange(4,8)
-        self.ressources= {"metal":0,
-                          "energie":0,
-                          "existentielle":0}
+        self.ressources= {"metal":1000,
+                          "energie":10000,
+                          "existentielle":100}
 
 class Vaisseau():
     def __init__(self,parent,nom,x,y):
@@ -193,7 +190,7 @@ class Joueur():
 class IA(Joueur):
     def __init__(self,parent,nom,etoilemere,couleur):
         Joueur.__init__(self, parent, nom, etoilemere, couleur)  
-        self.cooldownmax=200
+        self.cooldownmax=1000
         self.cooldown=20
         
     def jouer_prochain_coup(self):
@@ -216,16 +213,17 @@ class IA(Joueur):
 class Modele():
     def __init__(self,parent,joueurs):
         self.parent=parent
-        self.largeur=5000
-        self.hauteur=5000
-        self.nb_etoiles=80
+        self.largeur=9000
+        self.hauteur=9000
+        self.nb_etoiles=int((self.hauteur*self.largeur)/500000)
         self.joueurs={}
         self.actions_a_faire={}
         self.etoiles=[]
         self.trou_de_vers=[]
         self.cadre_courant=None
         self.creeretoiles(joueurs,1)
-        self.creer_troudevers(5)
+        nb_trou=int((self.hauteur*self.largeur)/5000000)
+        self.creer_troudevers(nb_trou)
 
     def creer_troudevers(self,n):
         bordure=10
@@ -241,7 +239,7 @@ class Modele():
         for i in range(self.nb_etoiles):
             x=random.randrange(self.largeur-(2*bordure))+bordure
             y=random.randrange(self.hauteur-(2*bordure))+bordure
-            self.etoiles.append(Etoile(x,y))
+            self.etoiles.append(Etoile(self,x,y))
         np=len(joueurs)+ias
         etoile_occupee=[]
         while np:
@@ -254,7 +252,16 @@ class Modele():
         couleurs=["red","blue","lightgreen","yellow",
                   "lightblue","pink","gold","purple"]
         for i in joueurs:
-            self.joueurs[i]=Joueur(self,i,etoile_occupee.pop(0),couleurs.pop(0))
+            etoile=etoile_occupee.pop(0)
+            self.joueurs[i]=Joueur(self,i,etoile,couleurs.pop(0))
+            x=etoile.x
+            y=etoile.y
+            dist=500
+            for e in range(5):
+                x1=random.randrange(x-dist,x+dist)
+                y1=random.randrange(y-dist,y+dist)
+                self.etoiles.append(Etoile(self,x1,y1))
+
         
         # IA- creation des ias
         couleursia=["orange","green","cyan",
